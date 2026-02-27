@@ -5,7 +5,7 @@ import Testing
 
 @Suite("ChoirHelperError")
 struct ChoirHelperErrorTests {
-    @Test("Error descriptions are human-readable")
+    @Test("All error cases produce non-empty descriptions")
     func errorDescriptions() {
         let errors: [ChoirHelperError] = [
             .fileNotFound("/path/to/file"),
@@ -25,9 +25,17 @@ struct ChoirHelperErrorTests {
         }
     }
 
-    @Test("API key missing has specific message")
+    @Test("API key missing mentions API key")
     func apiKeyMissingMessage() {
         let error = ChoirHelperError.apiKeyMissing
         #expect(error.localizedDescription.contains("API key"))
+    }
+
+    @Test("API error includes status code")
+    func apiErrorIncludesStatusCode() {
+        let error = ChoirHelperError.apiError(
+            statusCode: 429, message: "rate limited"
+        )
+        #expect(error.localizedDescription.contains("429"))
     }
 }
