@@ -22,6 +22,31 @@ let package = Package(
         )
     ],
     targets: [
+        // App - SwiftUI app entry point
+        .target(
+            name: "App",
+            dependencies: [
+                "Models",
+                "MusicXML",
+                "OpenRouter",
+                "Playback",
+                "Storage",
+                "Views",
+            ],
+            path: "Sources/App"
+        ),
+
+        // Views - SwiftUI view components
+        .target(
+            name: "Views",
+            dependencies: [
+                "Models",
+                "Playback",
+                "Storage",
+            ],
+            path: "Sources/Views"
+        ),
+
         // Models - Domain types (zero dependencies)
         .target(
             name: "Models",
