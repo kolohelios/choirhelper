@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache SPM dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            .build/checkouts
+            .build/repositories
+          key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Cache Homebrew packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            /opt/homebrew/Cellar/swift-format
+            /opt/homebrew/Cellar/swiftlint
+          key: ${{ runner.os }}-homebrew-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-homebrew-
+
+      - name: Install Swift tools
+        run: |
+          brew install swift-format swiftlint
+          brew link --overwrite swift-format swiftlint || true
+
+      - name: Cache Swift build artifacts
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: ${{ runner.os }}-swift-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-swift-
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Validate (format + lint + test)
+        run: |
+          nix develop --command just validate
+
+      - name: Check code coverage
+        run: |
+          nix develop --command bash -c '
+            xcrun swift test --enable-code-coverage
+
+            COVERAGE_JSON=$(xcrun llvm-cov export \
+              .build/debug/ChoirHelperPackageTests.xctest/Contents/MacOS/ChoirHelperPackageTests \
+              --instr-profile .build/debug/codecov/default.profdata \
+              --format=text 2>/dev/null || echo "")
+
+            if [ -z "$COVERAGE_JSON" ]; then
+              echo "Error: Could not extract coverage data"
+              exit 1
+            fi
+
+            PERCENT=$(echo "$COVERAGE_JSON" | grep -oE "TOTAL.*" | awk "{print \$NF}" | tr -d "%")
+
+            echo "Code coverage: ${PERCENT}%"
+
+            if [ -n "$PERCENT" ] && [ "$PERCENT" -lt 80 ]; then
+              echo "Error: Code coverage ($PERCENT%) is below required 80%"
+              exit 1
+            fi
+
+            echo "✅ Code coverage check passed"
+          '

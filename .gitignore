@@ -1,0 +1,35 @@
+# Nix
+.direnv/
+result
+result-*
+
+# Swift
+.build/
+.swiftpm/
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
+
+# macOS
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Beads issue tracking
+.beads/
+
+# SoundFont (too large for git - downloaded at build time)
+Resources/GeneralUser.sf2

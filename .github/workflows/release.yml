@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    name: Build Release
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Swift tools
+        run: |
+          brew install swift-format swiftlint
+          brew link --overwrite swift-format swiftlint || true
+
+      - name: Build release
+        run: xcrun swift build -c release
+
+      - name: Create release archive
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          tar czf "choirhelper-${VERSION}-macos.tar.gz" \
+            -C .build/release ChoirHelper
+          shasum -a 256 "choirhelper-${VERSION}-macos.tar.gz" > checksums.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            choirhelper-*.tar.gz
+            checksums.txt
+          generate_release_notes: true

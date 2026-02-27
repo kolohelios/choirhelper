@@ -1,0 +1,48 @@
+name: PR Stack Validation
+
+on:
+  pull_request:
+
+jobs:
+  validate-commits:
+    name: Validate Commit Messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate conventional commits
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          FAILED=0
+          while IFS= read -r COMMIT; do
+            SHA=$(echo "$COMMIT" | cut -d' ' -f1)
+            MSG=$(git log --format=%s -n1 "$SHA")
+
+            # Check conventional commit format
+            if ! echo "$MSG" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|build|ci|perf)(\(.+\))?: .+'; then
+              echo "❌ Invalid commit message: $MSG"
+              echo "   Must match: type(scope): description"
+              FAILED=1
+            fi
+
+            # Check length
+            if [ ${#MSG} -gt 70 ]; then
+              echo "❌ Commit message too long (${#MSG} > 70): $MSG"
+              FAILED=1
+            fi
+
+            echo "✅ $MSG"
+          done < <(git log --oneline "$BASE_SHA".."$HEAD_SHA")
+
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "Some commits do not follow conventional commit format."
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ All commit messages are valid"
