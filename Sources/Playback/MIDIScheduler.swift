@@ -53,6 +53,10 @@ public struct MIDISchedule: Sendable {
 public struct MIDIScheduler: Sendable {
     public init() {}
 
+    /// Small gap (in beats) inserted before non-tied note boundaries so the
+    /// sampler produces a re-articulation between consecutive same-pitch notes.
+    private static let articulationGap: Double = 0.05
+
     public func schedule(score: Score) -> MIDISchedule {
         var events: [MIDIEvent] = []
         var maxBeat: Double = 0
@@ -60,21 +64,50 @@ public struct MIDIScheduler: Sendable {
         for (partIndex, part) in score.parts.enumerated() {
             var currentBeat: Double = 0
 
-            for measure in part.measures {
-                for (noteIndex, note) in measure.notes.enumerated() {
-                    if !note.isRest {
-                        let velocity: UInt8 = velocityFor(dynamic: note.dynamic)
-                        for pitch in note.pitches {
-                            let midiNote = UInt8(clamping: pitch.midiNumber)
-                            let event = MIDIEvent(
-                                partIndex: partIndex, midiNote: midiNote, velocity: velocity,
-                                startBeat: currentBeat, durationBeats: note.duration,
-                                measureNumber: measure.number, noteIndex: noteIndex)
-                            events.append(event)
-                        }
+            // Flatten all notes across measures so we can look ahead for ties.
+            let allNotes = part.measures.flatMap { measure in
+                measure.notes.map { (note: $0, measureNumber: measure.number) }
+            }
+
+            for (noteIndex, entry) in allNotes.enumerated() {
+                let note = entry.note
+                if !note.isRest {
+                    // If this note is tied forward, accumulate duration with
+                    // the following note(s) rather than emitting now.
+                    if note.isTied {
+                        currentBeat += note.duration
+                        continue
                     }
-                    currentBeat += note.duration
+
+                    // Walk backwards to collect duration from preceding tied notes.
+                    var totalDuration = note.duration
+                    var startBeat = currentBeat
+                    var lookback = noteIndex - 1
+                    while lookback >= 0 {
+                        let prev = allNotes[lookback].note
+                        guard prev.isTied, !prev.isRest,
+                            prev.pitches.map(\.midiNumber) == note.pitches.map(\.midiNumber)
+                        else { break }
+                        totalDuration += prev.duration
+                        startBeat -= prev.duration
+                        lookback -= 1
+                    }
+
+                    // Shorten slightly so consecutive same-pitch notes re-articulate.
+                    let gap = min(Self.articulationGap, totalDuration * 0.25)
+                    let sounding = totalDuration - gap
+
+                    let velocity: UInt8 = velocityFor(dynamic: note.dynamic)
+                    for pitch in note.pitches {
+                        let midiNote = UInt8(clamping: pitch.midiNumber)
+                        let event = MIDIEvent(
+                            partIndex: partIndex, midiNote: midiNote, velocity: velocity,
+                            startBeat: startBeat, durationBeats: sounding,
+                            measureNumber: entry.measureNumber, noteIndex: noteIndex)
+                        events.append(event)
+                    }
                 }
+                currentBeat += note.duration
             }
             maxBeat = max(maxBeat, currentBeat)
         }
