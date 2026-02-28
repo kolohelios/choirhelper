@@ -38,6 +38,16 @@ public struct MIDISchedule: Sendable {
         self.totalBeats = totalBeats
         self.tempo = tempo
     }
+
+    /// Binary search for the first event index at or after the given beat.
+    public func eventIndex(forBeat beat: Double) -> Int {
+        var lo = 0, hi = events.count
+        while lo < hi {
+            let mid = (lo + hi) / 2
+            if events[mid].startBeat < beat { lo = mid + 1 } else { hi = mid }
+        }
+        return lo
+    }
 }
 
 public struct MIDIScheduler: Sendable {

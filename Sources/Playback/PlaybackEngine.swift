@@ -11,10 +11,12 @@ public enum PlaybackState: Sendable, Equatable {
 public protocol PlaybackEngineProtocol: Sendable {
     var state: PlaybackState { get async }
     var currentBeat: Double { get async }
+    var totalBeats: Double { get async }
     func load(score: Score) async throws
     func play() async throws
     func pause() async
     func stop() async
+    func seek(toBeat beat: Double) async throws
     func setPartVolume(partIndex: Int, volume: Float) async
     func setPartMuted(partIndex: Int, muted: Bool) async
     func setTempo(_ bpm: Int) async
@@ -31,6 +33,7 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
 
     public private(set) var state: PlaybackState = .stopped
     public private(set) var currentBeat: Double = 0
+    public var totalBeats: Double { schedule?.totalBeats ?? 0 }
 
     private var playbackTask: Task<Void, Never>?
     private var partVolumes: [Float] = []
@@ -96,6 +99,20 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
         allNotesOff()
     }
 
+    public func seek(toBeat beat: Double) throws {
+        let clamped = max(0, min(beat, totalBeats))
+        allNotesOff()
+        currentBeat = clamped
+
+        if state == .playing {
+            playbackTask?.cancel()
+            playbackTask = nil
+            try play()
+        } else if state == .stopped {
+            state = .paused
+        }
+    }
+
     public func setPartVolume(partIndex: Int, volume: Float) {
         guard partIndex < partVolumes.count else { return }
         partVolumes[partIndex] = volume
@@ -155,7 +172,7 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
     private func runPlayback(schedule: MIDISchedule) async {
         let events = schedule.events
         var activeNotes: [ActiveNote] = []
-        var eventIndex = 0
+        var eventIndex = schedule.eventIndex(forBeat: currentBeat)
         let startTime = Date()
         let startBeat = currentBeat
 
