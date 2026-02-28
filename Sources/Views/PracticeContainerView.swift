@@ -1,6 +1,7 @@
 import Models
 import Notation
 import Playback
+import Storage
 import SwiftUI
 
 public struct PracticeContainerView: View {
@@ -14,6 +15,9 @@ public struct PracticeContainerView: View {
     @State private var errorMessage: String?
     @State private var isScrubbing = false
     @State private var totalBeats: Double = 1
+    @State private var activePartTypes: Set<PartType> = []
+
+    private let settings = SettingsStorage()
 
     public init(score: Score) { self.score = score }
 
@@ -33,7 +37,14 @@ public struct PracticeContainerView: View {
                     volumeControls
                 }.padding()
             }
-        }.navigationTitle(score.title).task { await setupEngine() }.alert(
+        }.navigationTitle(score.title)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    partPickerMenu
+                }
+            }
+            .task { await loadActivePartTypes() }
+            .task { await setupEngine() }.alert(
             "Playback Error",
             isPresented: .init(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
         ) {
@@ -125,7 +136,7 @@ public struct PracticeContainerView: View {
                             systemName: partMuted.indices.contains(index) && partMuted[index]
                                 ? "speaker.slash.fill" : "speaker.wave.2.fill"
                         ).foregroundStyle(
-                            score.userPartTypes.contains(part.partType)
+                            activePartTypes.contains(part.partType)
                                 ? Color.accentColor : Color.secondary)
                     }.buttonStyle(.plain)
 
@@ -141,6 +152,42 @@ public struct PracticeContainerView: View {
                 }
             }
         }.padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Part Picker
+
+    private var vocalPartsInScore: [Part] { score.parts.filter(\.isVocal) }
+
+    private var partPickerMenu: some View {
+        Menu {
+            ForEach(vocalPartsInScore) { part in
+                Button {
+                    Task { await togglePartType(part.partType) }
+                } label: {
+                    if activePartTypes.contains(part.partType) {
+                        Label(part.name, systemImage: "checkmark")
+                    } else {
+                        Text(part.name)
+                    }
+                }
+            }
+        } label: {
+            Label("My Part", systemImage: "person.crop.rectangle")
+        }
+    }
+
+    private func loadActivePartTypes() async {
+        let types = await settings.getUserPartTypes()
+        activePartTypes = Set(types)
+    }
+
+    private func togglePartType(_ partType: PartType) async {
+        if activePartTypes.contains(partType) {
+            activePartTypes.remove(partType)
+        } else {
+            activePartTypes.insert(partType)
+        }
+        await settings.setUserPartTypes(Array(activePartTypes))
     }
 
     // MARK: - Engine
