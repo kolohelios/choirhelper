@@ -36,6 +36,7 @@ enum MusicXMLElement: String {
     case movementTitle = "movement-title"
     case identification
     case creator
+    case chord
 }
 
 struct PartListEntry {

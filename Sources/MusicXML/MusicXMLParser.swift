@@ -60,6 +60,7 @@ private final class MusicXMLHandler: NSObject, XMLParserDelegate {
     private var currentLyricText: String?
     private var currentSyllabic: Lyric.Syllabic = .single
     private var currentDynamic: Dynamic?
+    private var currentIsChord = false
     private var inLyric = false
 
     // Key/time tracking per measure
@@ -108,6 +109,7 @@ private final class MusicXMLHandler: NSObject, XMLParserDelegate {
         case MusicXMLElement.measure.rawValue: handleStartMeasure(attributes: attributes)
         case MusicXMLElement.note.rawValue: resetNoteState()
         case MusicXMLElement.rest.rawValue: currentIsRest = true
+        case MusicXMLElement.chord.rawValue: currentIsChord = true
         case MusicXMLElement.tie.rawValue: if attributes["type"] == "start" { currentIsTied = true }
         case MusicXMLElement.lyric.rawValue: handleStartLyric()
         case MusicXMLElement.sound.rawValue: handleStartSound(attributes: attributes)
@@ -233,6 +235,7 @@ private final class MusicXMLHandler: NSObject, XMLParserDelegate {
         currentLyricText = nil
         currentSyllabic = .single
         currentDynamic = nil
+        currentIsChord = false
     }
 
     private func finishNote() {
@@ -245,6 +248,25 @@ private final class MusicXMLHandler: NSObject, XMLParserDelegate {
             pitch = nil
         }
 
+        guard let partId = activePartId else { return }
+        var measures = partMeasures[partId, default: []]
+
+        // For chord notes, merge the new pitch into the previous note
+        if currentIsChord, let newPitch = pitch,
+            let last = measures.last, last.number == currentMeasureNumber,
+            let prevNote = last.notes.last
+        {
+            var mergedPitches = prevNote.pitches
+            mergedPitches.append(newPitch)
+            let merged = Note(
+                id: prevNote.id, pitches: mergedPitches, duration: prevNote.duration,
+                noteType: prevNote.noteType, isRest: prevNote.isRest, isTied: prevNote.isTied,
+                lyric: prevNote.lyric, dynamic: prevNote.dynamic)
+            last.notes[last.notes.count - 1] = merged
+            partMeasures[partId] = measures
+            return
+        }
+
         let lyric: Lyric?
         if let text = currentLyricText {
             lyric = Lyric(text: text, syllabic: currentSyllabic)
@@ -255,9 +277,6 @@ private final class MusicXMLHandler: NSObject, XMLParserDelegate {
         let note = Note(
             pitch: pitch, duration: durationInQuarters, noteType: currentNoteType,
             isRest: currentIsRest, isTied: currentIsTied, lyric: lyric, dynamic: currentDynamic)
-
-        guard let partId = activePartId else { return }
-        var measures = partMeasures[partId, default: []]
 
         if let last = measures.last, last.number == currentMeasureNumber {
             last.notes.append(note)
