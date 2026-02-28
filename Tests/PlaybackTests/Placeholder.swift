@@ -83,6 +83,56 @@ import Testing
         #expect(partIndices == [0, 1])
     }
 
+    @Test("Chord produces one event per pitch at same start beat") func chordEvents() {
+        let measure = Measure(
+            number: 1,
+            notes: [
+                Note(
+                    pitches: [
+                        Pitch(step: .c, octave: 4),
+                        Pitch(step: .e, octave: 4),
+                        Pitch(step: .g, octave: 4),
+                    ], duration: 1.0, noteType: .quarter)
+            ])
+        let score = Score(
+            title: "Chord", keySignature: KeySignature(fifths: 0),
+            timeSignature: TimeSignature(beats: 4, beatType: 4), tempo: 120,
+            parts: [
+                Part(
+                    name: "Piano", partType: .piano, measures: [measure], midiChannel: 0,
+                    midiProgram: 0)
+            ])
+        let schedule = scheduler.schedule(score: score)
+        #expect(schedule.events.count == 3)
+        // All events at same start beat
+        #expect(schedule.events.allSatisfy { $0.startBeat == 0.0 })
+        let midiNotes = Set(schedule.events.map(\.midiNote))
+        #expect(midiNotes == [60, 64, 67])  // C4, E4, G4
+    }
+
+    @Test("Chord does not inflate total beats") func chordTotalBeats() {
+        let measure = Measure(
+            number: 1,
+            notes: [
+                Note(
+                    pitches: [
+                        Pitch(step: .c, octave: 4),
+                        Pitch(step: .e, octave: 4),
+                    ], duration: 2.0, noteType: .half),
+                Note(pitch: Pitch(step: .g, octave: 4), duration: 2.0, noteType: .half),
+            ])
+        let score = Score(
+            title: "Chord", keySignature: KeySignature(fifths: 0),
+            timeSignature: TimeSignature(beats: 4, beatType: 4), tempo: 120,
+            parts: [
+                Part(
+                    name: "Piano", partType: .piano, measures: [measure], midiChannel: 0,
+                    midiProgram: 0)
+            ])
+        let schedule = scheduler.schedule(score: score)
+        #expect(schedule.totalBeats == 4.0)
+    }
+
     @Test("Dynamic affects velocity") func dynamicAffectsVelocity() {
         let measure = Measure(
             number: 1,
