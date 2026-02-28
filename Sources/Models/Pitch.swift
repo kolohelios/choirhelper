@@ -12,17 +12,12 @@ public struct Pitch: Codable, Sendable, Hashable {
     }
 
     public var midiNumber: Int {
-        let baseMidi: [Step: Int] = [
-            .c: 0, .d: 2, .e: 4, .f: 5,
-            .g: 7, .a: 9, .b: 11,
-        ]
+        let baseMidi: [Step: Int] = [.c: 0, .d: 2, .e: 4, .f: 5, .g: 7, .a: 9, .b: 11]
         guard let base = baseMidi[step] else { return 60 }
         return (octave + 1) * 12 + base + alter
     }
 
-    public var frequency: Double {
-        440.0 * pow(2.0, Double(midiNumber - 69) / 12.0)
-    }
+    public var frequency: Double { 440.0 * pow(2.0, Double(midiNumber - 69) / 12.0) }
 
     public var displayName: String {
         let stepName = step.rawValue.uppercased()
@@ -38,6 +33,4 @@ public struct Pitch: Codable, Sendable, Hashable {
     }
 }
 
-public enum Step: String, Codable, Sendable, CaseIterable {
-    case c, d, e, f, g, a, b
-}
+public enum Step: String, Codable, Sendable, CaseIterable { case c, d, e, f, g, a, b }

@@ -9,15 +9,9 @@ public struct TimeSignature: Codable, Sendable, Hashable {
         self.beatType = beatType
     }
 
-    public var displayName: String {
-        "\(beats)/\(beatType)"
-    }
+    public var displayName: String { "\(beats)/\(beatType)" }
 
-    public var beatsPerMeasure: Double {
-        Double(beats)
-    }
+    public var beatsPerMeasure: Double { Double(beats) }
 
-    public var beatDuration: Double {
-        4.0 / Double(beatType)
-    }
+    public var beatDuration: Double { 4.0 / Double(beatType) }
 }

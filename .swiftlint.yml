@@ -61,6 +61,12 @@ opt_in_rules:
 disabled_rules:
   - todo
   - trailing_comma
+  - attributes  # Conflicts with swift-format's attribute placement
+  - multiline_arguments  # Conflicts with swift-format's line wrapping
+  - multiline_parameters  # Conflicts with swift-format's line wrapping
+  - multiline_function_chains  # Conflicts with swift-format's line wrapping
+  - opening_brace  # Conflicts with swift-format's brace placement on multi-line declarations
+  - pattern_matching_keywords  # Conflicts with swift-format's binding style
 
 # Rule configurations
 line_length:
@@ -87,7 +93,7 @@ file_length:
 cyclomatic_complexity:
   warning: 10
   error: 15
-  ignores_case_statements: false
+  ignores_case_statements: true
 
 nesting:
   type_level:
@@ -106,6 +112,17 @@ identifier_name:
     - to
     - at
     - in
+    - i
+    # Musical note names (PitchStep enum)
+    - a
+    - b
+    - c
+    - d
+    - e
+    - f
+    - g
+    # Musical dynamics (Dynamic enum)
+    - p
 
 force_unwrapping:
   severity: warning

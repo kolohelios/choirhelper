@@ -17,60 +17,41 @@ public struct SettingsView: View {
             apiKeySection
             partSelectionSection
             aboutSection
-        }
-        .formStyle(.grouped)
-        .navigationTitle("Settings")
-        .task { await loadSettings() }
+        }.formStyle(.grouped).navigationTitle("Settings").task { await loadSettings() }
     }
 
     private var apiKeySection: some View {
         Section {
             HStack {
                 if showingAPIKey {
-                    TextField("OpenRouter API Key", text: $apiKey)
-                        .textFieldStyle(.roundedBorder)
+                    TextField("OpenRouter API Key", text: $apiKey).textFieldStyle(.roundedBorder)
                 } else {
-                    SecureField("OpenRouter API Key", text: $apiKey)
-                        .textFieldStyle(.roundedBorder)
+                    SecureField("OpenRouter API Key", text: $apiKey).textFieldStyle(.roundedBorder)
                 }
                 Button {
                     showingAPIKey.toggle()
                 } label: {
-                    Image(
-                        systemName: showingAPIKey
-                            ? "eye.slash" : "eye"
-                    )
-                }
-                .buttonStyle(.plain)
+                    Image(systemName: showingAPIKey ? "eye.slash" : "eye")
+                }.buttonStyle(.plain)
             }
 
-            Button("Save API Key") {
-                Task { await saveAPIKey() }
-            }
-            .disabled(apiKey.isEmpty)
+            Button("Save API Key") { Task { await saveAPIKey() } }.disabled(apiKey.isEmpty)
 
-            if let status = saveStatus {
-                Text(status)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            if let status = saveStatus { Text(status).font(.caption).foregroundStyle(.secondary) }
         } header: {
             Text("OpenRouter API Key")
         } footer: {
             Text(
                 "Get your API key at openrouter.ai. "
-                    + "Your key is stored securely in the system Keychain."
-            )
+                    + "Your key is stored securely in the system Keychain.")
         }
     }
 
     private var partSelectionSection: some View {
         Section {
             let vocalTypes: [PartType] = [
-                .soprano, .alto, .tenor, .bass,
-                .soprano1, .soprano2, .alto1, .alto2,
-                .tenor1, .tenor2, .bass1, .bass2,
-                .descant,
+                .soprano, .alto, .tenor, .bass, .soprano1, .soprano2, .alto1, .alto2, .tenor1,
+                .tenor2, .bass1, .bass2, .descant,
             ]
             ForEach(vocalTypes, id: \.self) { partType in
                 Toggle(
@@ -84,17 +65,14 @@ public struct SettingsView: View {
                                 selectedPartTypes.remove(partType)
                             }
                             Task { await savePartTypes() }
-                        }
-                    )
-                )
+                        }))
             }
         } header: {
             Text("I Sing")
         } footer: {
             Text(
                 "Select the part(s) you sing. "
-                    + "Selected parts are highlighted and played louder."
-            )
+                    + "Selected parts are highlighted and played louder.")
         }
     }
 
@@ -106,9 +84,7 @@ public struct SettingsView: View {
     }
 
     private func loadSettings() async {
-        if let key = try? await settings.getAPIKey(), !key.isEmpty {
-            apiKey = key
-        }
+        if let key = try? await settings.getAPIKey(), !key.isEmpty { apiKey = key }
         let types = await settings.getUserPartTypes()
         selectedPartTypes = Set(types)
     }
@@ -117,12 +93,8 @@ public struct SettingsView: View {
         do {
             try await settings.setAPIKey(apiKey)
             saveStatus = "API key saved"
-        } catch {
-            saveStatus = "Failed to save: \(error.localizedDescription)"
-        }
+        } catch { saveStatus = "Failed to save: \(error.localizedDescription)" }
     }
 
-    private func savePartTypes() async {
-        await settings.setUserPartTypes(Array(selectedPartTypes))
-    }
+    private func savePartTypes() async { await settings.setUserPartTypes(Array(selectedPartTypes)) }
 }

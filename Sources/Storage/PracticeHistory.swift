@@ -9,10 +9,7 @@ public struct PracticeSession: Codable, Sendable, Identifiable {
     public let partTypes: [PartType]
 
     public init(
-        id: UUID = UUID(),
-        scoreId: UUID,
-        date: Date = Date(),
-        durationSeconds: Double,
+        id: UUID = UUID(), scoreId: UUID, date: Date = Date(), durationSeconds: Double,
         partTypes: [PartType]
     ) {
         self.id = id
@@ -38,16 +35,16 @@ public actor PracticeHistory: PracticeHistoryProtocol {
             baseDir = directory
         } else {
             let fileManager = FileManager.default
-            if let iCloudURL = fileManager.url(
-                forUbiquityContainerIdentifier: nil
-            )?.appendingPathComponent("Documents") {
+            if let iCloudURL = fileManager.url(forUbiquityContainerIdentifier: nil)?
+                .appendingPathComponent("Documents")
+            {
                 baseDir = iCloudURL
-            } else {
-                let appSupport = fileManager.urls(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask
-                ).first!
+            } else if let appSupport = fileManager.urls(
+                for: .applicationSupportDirectory, in: .userDomainMask
+            ).first {
                 baseDir = appSupport.appendingPathComponent("ChoirHelper")
+            } else {
+                baseDir = fileManager.temporaryDirectory.appendingPathComponent("ChoirHelper")
             }
         }
         self.fileURL = baseDir.appendingPathComponent("practice_history.json")
@@ -61,18 +58,13 @@ public actor PracticeHistory: PracticeHistoryProtocol {
 
     public func sessions(for scoreId: UUID) throws -> [PracticeSession] {
         let all = (try? loadSessions()) ?? []
-        return all.filter { $0.scoreId == scoreId }
-            .sorted { $0.date > $1.date }
+        return all.filter { $0.scoreId == scoreId }.sorted { $0.date > $1.date }
     }
 
-    public func allSessions() throws -> [PracticeSession] {
-        (try? loadSessions()) ?? []
-    }
+    public func allSessions() throws -> [PracticeSession] { (try? loadSessions()) ?? [] }
 
     private func loadSessions() throws -> [PracticeSession] {
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            return []
-        }
+        guard FileManager.default.fileExists(atPath: fileURL.path) else { return [] }
         let data = try Data(contentsOf: fileURL)
         return try JSONDecoder().decode([PracticeSession].self, from: data)
     }
@@ -80,9 +72,7 @@ public actor PracticeHistory: PracticeHistoryProtocol {
     private func saveSessions(_ sessions: [PracticeSession]) throws {
         let dir = fileURL.deletingLastPathComponent()
         if !FileManager.default.fileExists(atPath: dir.path) {
-            try FileManager.default.createDirectory(
-                at: dir, withIntermediateDirectories: true
-            )
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted

@@ -6,9 +6,7 @@ public struct ChatCompletionResponse: Codable, Sendable {
     public let choices: [Choice]
     public let usage: Usage?
 
-    public var firstContent: String? {
-        choices.first?.message.content
-    }
+    public var firstContent: String? { choices.first?.message.content }
 
     public struct Choice: Codable, Sendable {
         public let index: Int

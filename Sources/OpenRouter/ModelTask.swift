@@ -7,12 +7,9 @@ public enum ModelTask: Sendable {
 
     public var defaultModel: String {
         switch self {
-        case .visionOCR:
-            return "google/gemini-2.0-flash-001"
-        case .musicXMLGeneration:
-            return "anthropic/claude-sonnet-4"
-        case .coaching:
-            return "anthropic/claude-sonnet-4"
+        case .visionOCR: return "google/gemini-2.0-flash-001"
+        case .musicXMLGeneration: return "anthropic/claude-sonnet-4"
+        case .coaching: return "anthropic/claude-sonnet-4"
         }
     }
 }

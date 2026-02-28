@@ -100,30 +100,25 @@ private let minimalSATBXML = """
 
 // MARK: - Tests
 
-@Suite("MusicXMLParser")
-struct MusicXMLParserTests {
+@Suite("MusicXMLParser") struct MusicXMLParserTests {
     let parser = MusicXMLParser()
 
-    @Test("Parses title from work-title")
-    func parsesTitle() throws {
+    @Test("Parses title from work-title") func parsesTitle() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         #expect(score.title == "Test Piece")
     }
 
-    @Test("Parses composer from creator")
-    func parsesComposer() throws {
+    @Test("Parses composer from creator") func parsesComposer() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         #expect(score.composer == "Test Composer")
     }
 
-    @Test("Parses all five parts")
-    func parsesFiveParts() throws {
+    @Test("Parses all five parts") func parsesFiveParts() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         #expect(score.parts.count == 5)
     }
 
-    @Test("Infers part types from names")
-    func infersPartTypes() throws {
+    @Test("Infers part types from names") func infersPartTypes() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         #expect(score.parts[0].partType == .soprano)
         #expect(score.parts[1].partType == .alto)
@@ -132,28 +127,24 @@ struct MusicXMLParserTests {
         #expect(score.parts[4].partType == .piano)
     }
 
-    @Test("Parses key signature")
-    func parsesKeySignature() throws {
+    @Test("Parses key signature") func parsesKeySignature() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         #expect(score.keySignature.fifths == -2)
         #expect(score.keySignature.mode == .major)
     }
 
-    @Test("Parses time signature")
-    func parsesTimeSignature() throws {
+    @Test("Parses time signature") func parsesTimeSignature() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         #expect(score.timeSignature.beats == 4)
         #expect(score.timeSignature.beatType == 4)
     }
 
-    @Test("Parses tempo from sound element")
-    func parsesTempo() throws {
+    @Test("Parses tempo from sound element") func parsesTempo() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         #expect(score.tempo == 120)
     }
 
-    @Test("Parses soprano notes correctly")
-    func parsesSopranoNotes() throws {
+    @Test("Parses soprano notes correctly") func parsesSopranoNotes() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         let soprano = score.parts[0]
         #expect(soprano.measures.count == 1)
@@ -166,16 +157,14 @@ struct MusicXMLParserTests {
         #expect(firstNote.duration == 1.0)
     }
 
-    @Test("Parses lyrics with syllabic info")
-    func parsesLyrics() throws {
+    @Test("Parses lyrics with syllabic info") func parsesLyrics() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         let firstNote = score.parts[0].measures[0].notes[0]
         #expect(firstNote.lyric?.text == "La")
         #expect(firstNote.lyric?.syllabic == .single)
     }
 
-    @Test("Parses rest notes")
-    func parsesRests() throws {
+    @Test("Parses rest notes") func parsesRests() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         let bass = score.parts[3]
         let firstNote = bass.measures[0].notes[0]
@@ -183,48 +172,38 @@ struct MusicXMLParserTests {
         #expect(firstNote.pitch == nil)
     }
 
-    @Test("Parses tied notes")
-    func parsesTies() throws {
+    @Test("Parses tied notes") func parsesTies() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         let tenor = score.parts[2]
         let note = tenor.measures[0].notes[0]
         #expect(note.isTied == true)
     }
 
-    @Test("Parses note durations relative to divisions")
-    func parsesDurations() throws {
+    @Test("Parses note durations relative to divisions") func parsesDurations() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
         let soprano = score.parts[0]
         let notes = soprano.measures[0].notes
         // divisions=1, so duration values map directly to quarter notes
-        #expect(notes[0].duration == 1.0) // quarter
-        #expect(notes[1].duration == 1.0) // quarter
-        #expect(notes[2].duration == 2.0) // half
+        #expect(notes[0].duration == 1.0)  // quarter
+        #expect(notes[1].duration == 1.0)  // quarter
+        #expect(notes[2].duration == 2.0)  // half
     }
 
-    @Test("Assigns vocal MIDI programs to voice parts")
-    func assignsVocalMidiPrograms() throws {
+    @Test("Assigns vocal MIDI programs to voice parts") func assignsVocalMidiPrograms() throws {
         let score = try parser.parse(data: Data(minimalSATBXML.utf8))
-        #expect(score.parts[0].midiProgram == 52) // choir aahs
-        #expect(score.parts[4].midiProgram == 0) // piano
+        #expect(score.parts[0].midiProgram == 52)  // choir aahs
+        #expect(score.parts[4].midiProgram == 0)  // piano
     }
 
-    @Test("Throws on empty data")
-    func throwsOnEmptyData() throws {
-        #expect(throws: ChoirHelperError.self) {
-            try parser.parse(data: Data())
-        }
+    @Test("Throws on empty data") func throwsOnEmptyData() throws {
+        #expect(throws: ChoirHelperError.self) { try parser.parse(data: Data()) }
     }
 
-    @Test("Throws on invalid XML")
-    func throwsOnInvalidXML() throws {
-        #expect(throws: ChoirHelperError.self) {
-            try parser.parse(data: Data("not xml".utf8))
-        }
+    @Test("Throws on invalid XML") func throwsOnInvalidXML() throws {
+        #expect(throws: ChoirHelperError.self) { try parser.parse(data: Data("not xml".utf8)) }
     }
 
-    @Test("Handles divisions > 1")
-    func handlesDivisionsGreaterThanOne() throws {
+    @Test("Handles divisions > 1") func handlesDivisionsGreaterThanOne() throws {
         let xml = """
             <?xml version="1.0"?>
             <score-partwise>
@@ -250,7 +229,7 @@ struct MusicXMLParserTests {
             """
         let score = try parser.parse(data: Data(xml.utf8))
         let notes = score.parts[0].measures[0].notes
-        #expect(notes[0].duration == 1.0) // 2/2 = 1 quarter
-        #expect(notes[1].duration == 2.0) // 4/2 = 2 quarters
+        #expect(notes[0].duration == 1.0)  // 2/2 = 1 quarter
+        #expect(notes[1].duration == 2.0)  // 4/2 = 2 quarters
     }
 }

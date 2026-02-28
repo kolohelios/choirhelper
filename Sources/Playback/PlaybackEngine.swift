@@ -37,9 +37,7 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
     private var partMuted: [Bool] = []
     private var currentTempo: Int = 120
 
-    public init(
-        soundFontManager: SoundFontManagerProtocol = SoundFontManager()
-    ) {
+    public init(soundFontManager: SoundFontManagerProtocol = SoundFontManager()) {
         self.engine = AVAudioEngine()
         self.soundFontManager = soundFontManager
     }
@@ -61,11 +59,8 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
             for (index, sampler) in samplers.enumerated() {
                 let program = score.parts[index].midiProgram
                 try sampler.loadSoundBankInstrument(
-                    at: sfURL,
-                    program: program,
-                    bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
-                    bankLSB: UInt8(kAUSampler_DefaultBankLSB)
-                )
+                    at: sfURL, program: program, bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
+                    bankLSB: UInt8(kAUSampler_DefaultBankLSB))
             }
         }
 
@@ -76,9 +71,7 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
     public func play() throws {
         guard let schedule, state != .playing else { return }
 
-        if !engine.isRunning {
-            try engine.start()
-        }
+        if !engine.isRunning { try engine.start() }
 
         state = .playing
 
@@ -107,8 +100,7 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
         guard partIndex < partVolumes.count else { return }
         partVolumes[partIndex] = volume
         if partIndex < mixerNodes.count {
-            mixerNodes[partIndex].outputVolume =
-                partMuted[partIndex] ? 0 : volume
+            mixerNodes[partIndex].outputVolume = partMuted[partIndex] ? 0 : volume
         }
     }
 
@@ -116,14 +108,11 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
         guard partIndex < partMuted.count else { return }
         partMuted[partIndex] = muted
         if partIndex < mixerNodes.count {
-            mixerNodes[partIndex].outputVolume =
-                muted ? 0 : partVolumes[partIndex]
+            mixerNodes[partIndex].outputVolume = muted ? 0 : partVolumes[partIndex]
         }
     }
 
-    public func setTempo(_ bpm: Int) {
-        currentTempo = max(40, min(300, bpm))
-    }
+    public func setTempo(_ bpm: Int) { currentTempo = max(40, min(300, bpm)) }
 
     // MARK: - Audio Graph
 
@@ -137,14 +126,8 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
 
             engine.attach(sampler)
             engine.attach(mixer)
-            engine.connect(
-                sampler, to: mixer,
-                format: nil
-            )
-            engine.connect(
-                mixer, to: engine.mainMixerNode,
-                format: nil
-            )
+            engine.connect(sampler, to: mixer, format: nil)
+            engine.connect(mixer, to: engine.mainMixerNode, format: nil)
 
             samplers.append(sampler)
             mixerNodes.append(mixer)
@@ -154,24 +137,24 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
     }
 
     private func teardownAudioGraph() {
-        if engine.isRunning {
-            engine.stop()
-        }
-        for sampler in samplers {
-            engine.detach(sampler)
-        }
-        for mixer in mixerNodes {
-            engine.detach(mixer)
-        }
+        if engine.isRunning { engine.stop() }
+        for sampler in samplers { engine.detach(sampler) }
+        for mixer in mixerNodes { engine.detach(mixer) }
         samplers = []
         mixerNodes = []
     }
 
     // MARK: - Playback Loop
 
+    private struct ActiveNote {
+        let partIndex: Int
+        let note: UInt8
+        let endBeat: Double
+    }
+
     private func runPlayback(schedule: MIDISchedule) async {
         let events = schedule.events
-        var activeNotes: [(partIndex: Int, note: UInt8, endBeat: Double)] = []
+        var activeNotes: [ActiveNote] = []
         var eventIndex = 0
         let startTime = Date()
         let startBeat = currentBeat
@@ -189,23 +172,15 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
             }
 
             // Start new notes
-            while eventIndex < events.count,
-                events[eventIndex].startBeat <= currentBeat
-            {
+            while eventIndex < events.count, events[eventIndex].startBeat <= currentBeat {
                 let event = events[eventIndex]
-                if event.partIndex < samplers.count,
-                    !partMuted[event.partIndex]
-                {
+                if event.partIndex < samplers.count, !partMuted[event.partIndex] {
                     samplers[event.partIndex].startNote(
-                        event.midiNote,
-                        withVelocity: event.velocity,
-                        onChannel: 0
-                    )
-                    activeNotes.append((
-                        partIndex: event.partIndex,
-                        note: event.midiNote,
-                        endBeat: event.endBeat
-                    ))
+                        event.midiNote, withVelocity: event.velocity, onChannel: 0)
+                    activeNotes.append(
+                        ActiveNote(
+                            partIndex: event.partIndex, note: event.midiNote, endBeat: event.endBeat
+                        ))
                 }
                 eventIndex += 1
             }
@@ -214,9 +189,7 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
             activeNotes.removeAll { active in
                 if active.endBeat <= currentBeat {
                     if active.partIndex < samplers.count {
-                        samplers[active.partIndex].stopNote(
-                            active.note, onChannel: 0
-                        )
+                        samplers[active.partIndex].stopNote(active.note, onChannel: 0)
                     }
                     return true
                 }
@@ -229,9 +202,7 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
 
     private func allNotesOff() {
         for sampler in samplers {
-            for note: UInt8 in 0...127 {
-                sampler.stopNote(note, onChannel: 0)
-            }
+            for note: UInt8 in 0...127 { sampler.stopNote(note, onChannel: 0) }
         }
     }
 }

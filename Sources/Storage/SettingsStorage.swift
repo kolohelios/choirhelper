@@ -15,8 +15,7 @@ public actor SettingsStorage: SettingsStorageProtocol {
     private let defaults: UserDefaults
 
     public init(
-        keychainService: String = "com.choirhelper.openrouter",
-        keychainAccount: String = "api-key",
+        keychainService: String = "com.choirhelper.openrouter", keychainAccount: String = "api-key",
         defaults: UserDefaults = .standard
     ) {
         self.keychainService = keychainService
@@ -29,10 +28,8 @@ public actor SettingsStorage: SettingsStorageProtocol {
     public func getAPIKey() throws -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: keychainAccount,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecAttrService as String: keychainService, kSecAttrAccount as String: keychainAccount,
+            kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne,
         ]
 
         var result: AnyObject?
@@ -40,18 +37,12 @@ public actor SettingsStorage: SettingsStorageProtocol {
 
         switch status {
         case errSecSuccess:
-            guard let data = result as? Data,
-                let key = String(data: data, encoding: .utf8)
-            else {
+            guard let data = result as? Data, let key = String(data: data, encoding: .utf8) else {
                 return nil
             }
             return key
-        case errSecItemNotFound:
-            return nil
-        default:
-            throw ChoirHelperError.storageError(
-                "Keychain read failed: \(status)"
-            )
+        case errSecItemNotFound: return nil
+        default: throw ChoirHelperError.storageError("Keychain read failed: \(status)")
         }
     }
 
@@ -65,33 +56,26 @@ public actor SettingsStorage: SettingsStorageProtocol {
 
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: keychainAccount,
+            kSecAttrService as String: keychainService, kSecAttrAccount as String: keychainAccount,
             kSecValueData as String: data,
-            kSecAttrAccessible as String:
-                kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
         ]
 
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
-            throw ChoirHelperError.storageError(
-                "Keychain write failed: \(status)"
-            )
+            throw ChoirHelperError.storageError("Keychain write failed: \(status)")
         }
     }
 
     public func deleteAPIKey() throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: keychainAccount,
+            kSecAttrService as String: keychainService, kSecAttrAccount as String: keychainAccount,
         ]
 
         let status = SecItemDelete(query as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else {
-            throw ChoirHelperError.storageError(
-                "Keychain delete failed: \(status)"
-            )
+            throw ChoirHelperError.storageError("Keychain delete failed: \(status)")
         }
     }
 
@@ -100,11 +84,7 @@ public actor SettingsStorage: SettingsStorageProtocol {
     private static let partTypesKey = "userPartTypes"
 
     public func getUserPartTypes() -> [PartType] {
-        guard let strings = defaults.stringArray(
-            forKey: Self.partTypesKey
-        ) else {
-            return [.tenor]
-        }
+        guard let strings = defaults.stringArray(forKey: Self.partTypesKey) else { return [.tenor] }
         return strings.compactMap { PartType(rawValue: $0) }
     }
 

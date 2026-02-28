@@ -10,18 +10,11 @@ public struct MIDIEvent: Sendable, Equatable {
     public let measureNumber: Int
     public let noteIndex: Int
 
-    public var endBeat: Double {
-        startBeat + durationBeats
-    }
+    public var endBeat: Double { startBeat + durationBeats }
 
     public init(
-        partIndex: Int,
-        midiNote: UInt8,
-        velocity: UInt8,
-        startBeat: Double,
-        durationBeats: Double,
-        measureNumber: Int,
-        noteIndex: Int
+        partIndex: Int, midiNote: UInt8, velocity: UInt8, startBeat: Double, durationBeats: Double,
+        measureNumber: Int, noteIndex: Int
     ) {
         self.partIndex = partIndex
         self.midiNote = midiNote
@@ -38,9 +31,7 @@ public struct MIDISchedule: Sendable {
     public let totalBeats: Double
     public let tempo: Int
 
-    public var totalSeconds: Double {
-        totalBeats / Double(tempo) * 60.0
-    }
+    public var totalSeconds: Double { totalBeats / Double(tempo) * 60.0 }
 
     public init(events: [MIDIEvent], totalBeats: Double, tempo: Int) {
         self.events = events
@@ -62,21 +53,12 @@ public struct MIDIScheduler: Sendable {
             for measure in part.measures {
                 for (noteIndex, note) in measure.notes.enumerated() {
                     if !note.isRest, let pitch = note.pitch {
-                        let midiNote = UInt8(
-                            clamping: pitch.midiNumber
-                        )
-                        let velocity: UInt8 = velocityFor(
-                            dynamic: note.dynamic
-                        )
+                        let midiNote = UInt8(clamping: pitch.midiNumber)
+                        let velocity: UInt8 = velocityFor(dynamic: note.dynamic)
                         let event = MIDIEvent(
-                            partIndex: partIndex,
-                            midiNote: midiNote,
-                            velocity: velocity,
-                            startBeat: currentBeat,
-                            durationBeats: note.duration,
-                            measureNumber: measure.number,
-                            noteIndex: noteIndex
-                        )
+                            partIndex: partIndex, midiNote: midiNote, velocity: velocity,
+                            startBeat: currentBeat, durationBeats: note.duration,
+                            measureNumber: measure.number, noteIndex: noteIndex)
                         events.append(event)
                     }
                     currentBeat += note.duration
@@ -87,11 +69,7 @@ public struct MIDIScheduler: Sendable {
 
         events.sort { $0.startBeat < $1.startBeat }
 
-        return MIDISchedule(
-            events: events,
-            totalBeats: maxBeat,
-            tempo: score.tempo
-        )
+        return MIDISchedule(events: events, totalBeats: maxBeat, tempo: score.tempo)
     }
 
     private func velocityFor(dynamic: Dynamic?) -> UInt8 {

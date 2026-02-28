@@ -12,9 +12,7 @@ public struct PracticeContainerView: View {
     @State private var engine: PlaybackEngine?
     @State private var errorMessage: String?
 
-    public init(score: Score) {
-        self.score = score
-    }
+    public init(score: Score) { self.score = score }
 
     public var body: some View {
         VStack(spacing: 0) {
@@ -25,18 +23,11 @@ public struct PracticeContainerView: View {
                     transportControls
                     tempoControl
                     volumeControls
-                }
-                .padding()
+                }.padding()
             }
-        }
-        .navigationTitle(score.title)
-        .task { await setupEngine() }
-        .alert(
+        }.navigationTitle(score.title).task { await setupEngine() }.alert(
             "Playback Error",
-            isPresented: .init(
-                get: { errorMessage != nil },
-                set: { if !$0 { errorMessage = nil } }
-            )
+            isPresented: .init(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
         ) {
             Button("OK") { errorMessage = nil }
         } message: {
@@ -48,30 +39,16 @@ public struct PracticeContainerView: View {
         HStack {
             VStack(alignment: .leading) {
                 if let composer = score.composer {
-                    Text(composer)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text(composer).font(.subheadline).foregroundStyle(.secondary)
                 }
                 HStack(spacing: 12) {
-                    Label(
-                        score.keySignature.displayName,
-                        systemImage: "music.note"
-                    )
-                    Label(
-                        score.timeSignature.displayName,
-                        systemImage: "metronome"
-                    )
-                    Label(
-                        "\(score.parts.count) parts",
-                        systemImage: "person.3"
-                    )
-                }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                    Label(score.keySignature.displayName, systemImage: "music.note")
+                    Label(score.timeSignature.displayName, systemImage: "metronome")
+                    Label("\(score.parts.count) parts", systemImage: "person.3")
+                }.font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
-        }
-        .padding()
+        }.padding()
     }
 
     private var transportControls: some View {
@@ -79,96 +56,63 @@ public struct PracticeContainerView: View {
             Button {
                 Task { await stopPlayback() }
             } label: {
-                Image(systemName: "stop.fill")
-                    .font(.title2)
-            }
-            .disabled(playbackState == .stopped)
+                Image(systemName: "stop.fill").font(.title2)
+            }.disabled(playbackState == .stopped)
 
             Button {
                 Task { await togglePlayback() }
             } label: {
-                Image(
-                    systemName: playbackState == .playing
-                        ? "pause.fill" : "play.fill"
-                )
-                .font(.largeTitle)
+                Image(systemName: playbackState == .playing ? "pause.fill" : "play.fill").font(
+                    .largeTitle)
             }
 
-            Text(formatBeat(currentBeat))
-                .font(.system(.title3, design: .monospaced))
+            Text(formatBeat(currentBeat)).font(.system(.title3, design: .monospaced))
                 .foregroundStyle(.secondary)
-        }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        }.padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 
     private var tempoControl: some View {
         VStack(alignment: .leading) {
-            Text("Tempo: \(tempo) BPM")
-                .font(.headline)
+            Text("Tempo: \(tempo) BPM").font(.headline)
             Slider(
                 value: Binding(
                     get: { Double(tempo) },
                     set: { newVal in
                         tempo = Int(newVal)
                         Task { await engine?.setTempo(tempo) }
-                    }
-                ),
-                in: 40...300,
-                step: 1
-            )
-        }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    }), in: 40...300, step: 1)
+        }.padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 
     private var volumeControls: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Part Volumes")
-                .font(.headline)
+            Text("Part Volumes").font(.headline)
 
-            ForEach(
-                Array(score.parts.enumerated()), id: \.offset
-            ) { index, part in
+            ForEach(Array(score.parts.enumerated()), id: \.offset) { index, part in
                 HStack {
                     Button {
                         toggleMute(index: index)
                     } label: {
                         Image(
-                            systemName: partMuted.indices.contains(index)
-                                && partMuted[index]
+                            systemName: partMuted.indices.contains(index) && partMuted[index]
                                 ? "speaker.slash.fill" : "speaker.wave.2.fill"
-                        )
-                        .foregroundStyle(
+                        ).foregroundStyle(
                             score.userPartTypes.contains(part.partType)
-                                ? Color.accentColor : Color.secondary
-                        )
-                    }
-                    .buttonStyle(.plain)
+                                ? Color.accentColor : Color.secondary)
+                    }.buttonStyle(.plain)
 
-                    Text(part.name)
-                        .font(.subheadline)
-                        .frame(width: 80, alignment: .leading)
+                    Text(part.name).font(.subheadline).frame(width: 80, alignment: .leading)
 
                     Slider(
                         value: Binding(
                             get: {
                                 Double(
-                                    partVolumes.indices.contains(index)
-                                        ? partVolumes[index] : 1.0
-                                )
-                            },
-                            set: { newVal in
-                                setVolume(index: index, volume: Float(newVal))
-                            }
-                        ),
-                        in: 0...1
-                    )
+                                    partVolumes.indices.contains(index) ? partVolumes[index] : 1.0)
+                            }, set: { newVal in setVolume(index: index, volume: Float(newVal)) }),
+                        in: 0...1)
                 }
             }
-        }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        }.padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - Engine
@@ -179,13 +123,9 @@ public struct PracticeContainerView: View {
             try await newEngine.load(score: score)
             engine = newEngine
             tempo = score.tempo
-            partVolumes = Array(
-                repeating: Float(1.0), count: score.parts.count
-            )
+            partVolumes = Array(repeating: Float(1.0), count: score.parts.count)
             partMuted = Array(repeating: false, count: score.parts.count)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        } catch { errorMessage = error.localizedDescription }
     }
 
     private func togglePlayback() async {
@@ -200,9 +140,7 @@ public struct PracticeContainerView: View {
                 playbackState = .playing
                 startBeatTracking()
             }
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        } catch { errorMessage = error.localizedDescription }
     }
 
     private func stopPlayback() async {
@@ -215,19 +153,13 @@ public struct PracticeContainerView: View {
     private func toggleMute(index: Int) {
         guard partMuted.indices.contains(index) else { return }
         partMuted[index].toggle()
-        Task {
-            await engine?.setPartMuted(
-                partIndex: index, muted: partMuted[index]
-            )
-        }
+        Task { await engine?.setPartMuted(partIndex: index, muted: partMuted[index]) }
     }
 
     private func setVolume(index: Int, volume: Float) {
         guard partVolumes.indices.contains(index) else { return }
         partVolumes[index] = volume
-        Task {
-            await engine?.setPartVolume(partIndex: index, volume: volume)
-        }
+        Task { await engine?.setPartVolume(partIndex: index, volume: volume) }
     }
 
     private func startBeatTracking() {
@@ -236,9 +168,7 @@ public struct PracticeContainerView: View {
                 if let engine {
                     currentBeat = await engine.currentBeat
                     let state = await engine.state
-                    if state != .playing {
-                        playbackState = state
-                    }
+                    if state != .playing { playbackState = state }
                 }
                 try? await Task.sleep(for: .milliseconds(50))
             }
@@ -248,9 +178,7 @@ public struct PracticeContainerView: View {
     private func formatBeat(_ beat: Double) -> String {
         let measureNum = Int(beat / Double(score.timeSignature.beats)) + 1
         let beatInMeasure =
-            Int(beat.truncatingRemainder(
-                dividingBy: Double(score.timeSignature.beats)
-            )) + 1
+            Int(beat.truncatingRemainder(dividingBy: Double(score.timeSignature.beats))) + 1
         return "m.\(measureNum) beat \(beatInMeasure)"
     }
 }

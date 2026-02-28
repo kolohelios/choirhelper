@@ -7,10 +7,7 @@ public struct ChatCompletionRequest: Codable, Sendable {
     public let temperature: Double?
 
     public init(
-        model: String,
-        messages: [Message],
-        maxTokens: Int? = nil,
-        temperature: Double? = nil
+        model: String, messages: [Message], maxTokens: Int? = nil, temperature: Double? = nil
     ) {
         self.model = model
         self.messages = messages
@@ -33,9 +30,7 @@ public struct Message: Codable, Sendable {
         self.content = content
     }
 
-    public enum Role: String, Codable, Sendable {
-        case system, user, assistant
-    }
+    public enum Role: String, Codable, Sendable { case system, user, assistant }
 }
 
 public enum MessageContent: Codable, Sendable {
@@ -45,10 +40,8 @@ public enum MessageContent: Codable, Sendable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
-        case .text(let string):
-            try container.encode(string)
-        case .parts(let parts):
-            try container.encode(parts)
+        case .text(let string): try container.encode(string)
+        case .parts(let parts): try container.encode(parts)
         }
     }
 
@@ -92,15 +85,11 @@ public enum ContentPart: Codable, Sendable {
             let text = try container.decode(String.self, forKey: .text)
             self = .text(text)
         case "image_url":
-            let imageURL = try container.decode(
-                ImageURL.self, forKey: .imageUrl
-            )
+            let imageURL = try container.decode(ImageURL.self, forKey: .imageUrl)
             self = .imageURL(imageURL)
         default:
             throw DecodingError.dataCorruptedError(
-                forKey: .type, in: container,
-                debugDescription: "Unknown content type: \(type)"
-            )
+                forKey: .type, in: container, debugDescription: "Unknown content type: \(type)")
         }
     }
 

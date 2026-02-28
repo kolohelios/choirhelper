@@ -1,9 +1,7 @@
 import Foundation
 
 enum OCRPrompts {
-    static func visionExtractionPrompt(
-        userPart: String
-    ) -> String {
+    static func visionExtractionPrompt(userPart: String) -> String {
         """
         Analyze this photograph of sheet music. Extract every musical \
         detail: key/time signatures, tempo, notes (pitch + duration), \

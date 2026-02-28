@@ -11,14 +11,8 @@ public struct Note: Codable, Sendable, Identifiable, Hashable {
     public let dynamic: Dynamic?
 
     public init(
-        id: UUID = UUID(),
-        pitch: Pitch? = nil,
-        duration: Double,
-        noteType: NoteType = .quarter,
-        isRest: Bool = false,
-        isTied: Bool = false,
-        lyric: Lyric? = nil,
-        dynamic: Dynamic? = nil
+        id: UUID = UUID(), pitch: Pitch? = nil, duration: Double, noteType: NoteType = .quarter,
+        isRest: Bool = false, isTied: Bool = false, lyric: Lyric? = nil, dynamic: Dynamic? = nil
     ) {
         self.id = id
         self.pitch = pitch

@@ -9,12 +9,8 @@ public struct Part: Codable, Sendable, Identifiable, Hashable {
     public var midiProgram: UInt8
 
     public init(
-        id: UUID = UUID(),
-        name: String,
-        partType: PartType,
-        measures: [Measure],
-        midiChannel: UInt8,
-        midiProgram: UInt8
+        id: UUID = UUID(), name: String, partType: PartType, measures: [Measure],
+        midiChannel: UInt8, midiProgram: UInt8
     ) {
         self.id = id
         self.name = name
@@ -24,9 +20,7 @@ public struct Part: Codable, Sendable, Identifiable, Hashable {
         self.midiProgram = midiProgram
     }
 
-    public var isVocal: Bool {
-        partType.isVocal
-    }
+    public var isVocal: Bool { partType.isVocal }
 }
 
 public enum PartType: String, Codable, Sendable, CaseIterable, Hashable {
@@ -48,10 +42,8 @@ public enum PartType: String, Codable, Sendable, CaseIterable, Hashable {
 
     public var isVocal: Bool {
         switch self {
-        case .piano, .accompaniment:
-            return false
-        default:
-            return true
+        case .piano, .accompaniment: return false
+        default: return true
         }
     }
 

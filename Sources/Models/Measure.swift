@@ -8,10 +8,7 @@ public struct Measure: Codable, Sendable, Identifiable, Hashable {
     public let keySignature: KeySignature?
 
     public init(
-        id: UUID = UUID(),
-        number: Int,
-        notes: [Note],
-        timeSignature: TimeSignature? = nil,
+        id: UUID = UUID(), number: Int, notes: [Note], timeSignature: TimeSignature? = nil,
         keySignature: KeySignature? = nil
     ) {
         self.id = id
@@ -21,7 +18,5 @@ public struct Measure: Codable, Sendable, Identifiable, Hashable {
         self.keySignature = keySignature
     }
 
-    public var totalDuration: Double {
-        notes.reduce(0) { $0 + $1.duration }
-    }
+    public var totalDuration: Double { notes.reduce(0) { $0 + $1.duration } }
 }

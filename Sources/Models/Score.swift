@@ -11,13 +11,8 @@ public struct Score: Codable, Sendable, Identifiable, Hashable {
     public var userPartTypes: [PartType]
 
     public init(
-        id: UUID = UUID(),
-        title: String,
-        composer: String? = nil,
-        keySignature: KeySignature,
-        timeSignature: TimeSignature,
-        tempo: Int,
-        parts: [Part],
+        id: UUID = UUID(), title: String, composer: String? = nil, keySignature: KeySignature,
+        timeSignature: TimeSignature, tempo: Int, parts: [Part],
         userPartTypes: [PartType] = [.tenor]
     ) {
         self.id = id
@@ -30,26 +25,16 @@ public struct Score: Codable, Sendable, Identifiable, Hashable {
         self.userPartTypes = userPartTypes
     }
 
-    public var vocalParts: [Part] {
-        parts.filter(\.isVocal)
-    }
+    public var vocalParts: [Part] { parts.filter(\.isVocal) }
 
-    public var accompanimentParts: [Part] {
-        parts.filter { !$0.isVocal }
-    }
+    public var accompanimentParts: [Part] { parts.filter { !$0.isVocal } }
 
-    public var userParts: [Part] {
-        parts.filter { userPartTypes.contains($0.partType) }
-    }
+    public var userParts: [Part] { parts.filter { userPartTypes.contains($0.partType) } }
 
-    public var measureCount: Int {
-        parts.first?.measures.count ?? 0
-    }
+    public var measureCount: Int { parts.first?.measures.count ?? 0 }
 
     public var durationSeconds: Double {
-        guard let firstPart = parts.first, !firstPart.measures.isEmpty else {
-            return 0
-        }
+        guard let firstPart = parts.first, !firstPart.measures.isEmpty else { return 0 }
         let totalBeats = firstPart.measures.reduce(0.0) { $0 + $1.totalDuration }
         return totalBeats / Double(tempo) * 60.0
     }
