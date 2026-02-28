@@ -113,6 +113,9 @@ identifier_name:
     - at
     - in
     - i
+    # Graphics coordinates
+    - x
+    - y
     # Musical note names (PitchStep enum)
     - a
     - b
