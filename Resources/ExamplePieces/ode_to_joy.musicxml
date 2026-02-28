@@ -1756,7 +1756,7 @@
     </measure>
   </part>
 
-  <!-- PIANO (bass line, no lyrics) -->
+  <!-- PIANO (block chords, D major harmony) -->
   <part id="P5">
     <measure number="1">
       <attributes>
@@ -1766,98 +1766,276 @@
         <clef><sign>F</sign><line>4</line></clef>
       </attributes>
       <direction><sound tempo="120"/></direction>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
-      <note><pitch><step>G</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- G major -->
+      <note><pitch><step>G</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="2">
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- E minor -->
       <note><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>G</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major (first inversion) -->
       <note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>4</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="3">
+      <!-- B minor -->
       <note><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- G major -->
       <note><pitch><step>G</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="4">
+      <!-- D major (dotted quarter) -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>3</duration><type>quarter</type><dot/></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>quarter</type><dot/></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>3</duration><type>quarter</type><dot/></note>
+      <!-- A major (eighth) -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <!-- A major (half) -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>4</duration><type>half</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
     </measure>
     <measure number="5">
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
-      <note><pitch><step>G</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- G major -->
+      <note><pitch><step>G</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="6">
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- E minor -->
       <note><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>G</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major (first inversion) -->
       <note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>4</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="7">
+      <!-- B minor -->
       <note><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- G major -->
       <note><pitch><step>G</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="8">
+      <!-- A major (dotted quarter) -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>3</duration><type>quarter</type><dot/></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>quarter</type><dot/></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>3</duration><type>quarter</type><dot/></note>
+      <!-- D major (eighth) -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <!-- D major (half) -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
     </measure>
     <measure number="9">
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- B minor -->
       <note><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="10">
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D passing (eighth) -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <!-- C# passing (eighth) -->
       <note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- G major -->
       <note><pitch><step>G</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="11">
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D passing (eighth) -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <!-- C# passing (eighth) -->
       <note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="12">
+      <!-- B minor -->
       <note><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major (half) -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
     </measure>
     <measure number="13">
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
-      <note><pitch><step>G</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- G major -->
+      <note><pitch><step>G</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="14">
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- E minor -->
       <note><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>G</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major (first inversion) -->
       <note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>4</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="15">
+      <!-- B minor -->
       <note><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- G major -->
       <note><pitch><step>G</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>B</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- A major -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <!-- D major -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>2</duration><type>quarter</type></note>
     </measure>
     <measure number="16">
+      <!-- A major (dotted quarter) -->
       <note><pitch><step>A</step><octave>2</octave></pitch><duration>3</duration><type>quarter</type><dot/></note>
+      <note><chord/><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>quarter</type><dot/></note>
+      <note><chord/><pitch><step>E</step><octave>3</octave></pitch><duration>3</duration><type>quarter</type><dot/></note>
+      <!-- D major (eighth) -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>1</duration><type>eighth</type></note>
+      <!-- D major (half) -->
       <note><pitch><step>D</step><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
+      <note><chord/><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
+      <note><chord/><pitch><step>A</step><octave>3</octave></pitch><duration>4</duration><type>half</type></note>
     </measure>
   </part>
 </score-partwise>
