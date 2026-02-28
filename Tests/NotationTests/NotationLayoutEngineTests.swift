@@ -172,4 +172,92 @@ import Testing
         #expect(layout.lines.count == 3)
         for line in layout.lines { #expect(!line.measures.isEmpty) }
     }
+
+    // MARK: - Chord layout tests
+
+    @Test("Chord has multiple Y positions") func chordMultipleYPositions() {
+        let chord = Note(
+            pitches: [
+                Pitch(step: .c, octave: 5),
+                Pitch(step: .e, octave: 5),
+                Pitch(step: .g, octave: 5),
+            ], duration: 1.0, noteType: .quarter)
+        let measure = Measure(number: 1, notes: [chord])
+        let part = makePart(measures: [measure])
+        let geo = StaffGeometry(clefType: .treble)
+        let engine = NotationLayoutEngine(staffGeometry: geo, availableWidth: 400)
+        let layout = engine.layout(part: part)
+
+        let note = layout.lines[0].measures[0].notes[0]
+        #expect(note.ys.count == 3)
+        #expect(note.isChord)
+        // Y positions should all be different
+        #expect(Set(note.ys).count == 3)
+    }
+
+    @Test("Chord stem direction based on outermost pitches") func chordStemDirection() {
+        // Chord spanning above middle line — stem should go down
+        let highChord = Note(
+            pitches: [
+                Pitch(step: .a, octave: 5),
+                Pitch(step: .c, octave: 6),
+            ], duration: 1.0, noteType: .quarter)
+        let measure1 = Measure(number: 1, notes: [highChord])
+        let geo = StaffGeometry(clefType: .treble)
+        let engine = NotationLayoutEngine(staffGeometry: geo, availableWidth: 400)
+
+        let layout1 = engine.layout(part: makePart(measures: [measure1]))
+        #expect(!layout1.lines[0].measures[0].notes[0].stemUp)
+
+        // Chord spanning below middle line — stem should go up
+        let lowChord = Note(
+            pitches: [
+                Pitch(step: .c, octave: 4),
+                Pitch(step: .e, octave: 4),
+            ], duration: 1.0, noteType: .quarter)
+        let measure2 = Measure(number: 1, notes: [lowChord])
+        let layout2 = engine.layout(part: makePart(measures: [measure2]))
+        #expect(layout2.lines[0].measures[0].notes[0].stemUp)
+    }
+
+    @Test("Chord merges ledger lines from all pitches") func chordMergedLedgerLines() {
+        // C4 and A3 both need ledger lines below treble staff
+        let chord = Note(
+            pitches: [
+                Pitch(step: .c, octave: 4),
+                Pitch(step: .a, octave: 3),
+            ], duration: 1.0, noteType: .quarter)
+        let measure = Measure(number: 1, notes: [chord])
+        let part = makePart(measures: [measure])
+        let geo = StaffGeometry(clefType: .treble)
+        let engine = NotationLayoutEngine(staffGeometry: geo, availableWidth: 400)
+        let layout = engine.layout(part: part)
+
+        let note = layout.lines[0].measures[0].notes[0]
+        // Should have ledger lines (at least middle C line)
+        #expect(!note.ledgerLineYs.isEmpty)
+        // Ledger lines should be deduplicated and sorted
+        #expect(note.ledgerLineYs == note.ledgerLineYs.sorted())
+        #expect(Set(note.ledgerLineYs).count == note.ledgerLineYs.count)
+    }
+
+    @Test("Chord accidentals are per-pitch") func chordAccidentals() {
+        let chord = Note(
+            pitches: [
+                Pitch(step: .c, octave: 4),
+                Pitch(step: .e, alter: -1, octave: 4),
+                Pitch(step: .g, alter: 1, octave: 4),
+            ], duration: 1.0, noteType: .quarter)
+        let measure = Measure(number: 1, notes: [chord])
+        let part = makePart(measures: [measure])
+        let geo = StaffGeometry(clefType: .treble)
+        let engine = NotationLayoutEngine(staffGeometry: geo, availableWidth: 400)
+        let layout = engine.layout(part: part)
+
+        let note = layout.lines[0].measures[0].notes[0]
+        #expect(note.accidentals.count == 3)
+        #expect(note.accidentals[0] == 0)   // C natural
+        #expect(note.accidentals[1] == -1)  // Eb
+        #expect(note.accidentals[2] == 1)   // G#
+    }
 }

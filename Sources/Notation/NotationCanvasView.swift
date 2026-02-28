@@ -114,10 +114,10 @@ public struct NotationCanvasView: View {
     }
 
     private func drawNote(context: GraphicsContext, note: LayoutNote, staffY: CGFloat) {
-        let center = CGPoint(x: note.x, y: staffY + note.y)
         let spacing = staffGeometry.staffSpacing
 
         if note.isRest {
+            let center = CGPoint(x: note.x, y: staffY + note.y)
             drawRest(context: context, note: note, center: center, spacing: spacing)
             return
         }
@@ -129,23 +129,45 @@ public struct NotationCanvasView: View {
             context.stroke(Path(ledgerPath), with: .color(.primary.opacity(0.6)), lineWidth: 1)
         }
 
-        // Accidental
-        if note.accidental != 0 {
-            drawAccidental(context: context, note: note, center: center, spacing: spacing)
+        // Draw each notehead and its accidental
+        for (index, noteY) in note.ys.enumerated() {
+            let center = CGPoint(x: note.x, y: staffY + noteY)
+
+            // Accidental for this pitch
+            if index < note.accidentals.count, note.accidentals[index] != 0 {
+                let accidentalX = center.x - GlyphPaths.accidentalXOffset(spacing: spacing)
+                let accidentalCenter = CGPoint(x: accidentalX, y: center.y)
+                let path: CGPath
+                if note.accidentals[index] > 0 {
+                    path = GlyphPaths.sharpPath(at: accidentalCenter, spacing: spacing)
+                } else {
+                    path = GlyphPaths.flatPath(at: accidentalCenter, spacing: spacing)
+                }
+                context.stroke(Path(path), with: .color(.primary), lineWidth: 1.2)
+            }
+
+            // Notehead
+            drawNotehead(context: context, note: note, center: center, spacing: spacing)
         }
 
-        // Notehead
-        drawNotehead(context: context, note: note, center: center, spacing: spacing)
-
-        // Stem (not for whole notes)
+        // Stem (not for whole notes) — spans from outermost notehead to stem end
         if note.noteType != .whole {
+            let stemNoteheadY: CGFloat
+            if note.stemUp {
+                // Stem goes up from the lowest (highest Y value) notehead
+                stemNoteheadY = note.ys.max() ?? note.y
+            } else {
+                // Stem goes down from the highest (lowest Y value) notehead
+                stemNoteheadY = note.ys.min() ?? note.y
+            }
+            let stemCenter = CGPoint(x: note.x, y: staffY + stemNoteheadY)
             let stemPath = GlyphPaths.stemPath(
-                noteCenter: center, stemUp: note.stemUp, spacing: spacing)
+                noteCenter: stemCenter, stemUp: note.stemUp, spacing: spacing)
             context.stroke(Path(stemPath), with: .color(.primary), lineWidth: 1.2)
-        }
 
-        // Flags
-        drawFlags(context: context, note: note, center: center, spacing: spacing)
+            // Flags at stem tip
+            drawFlags(context: context, note: note, center: stemCenter, spacing: spacing)
+        }
     }
 
     private func drawNotehead(
@@ -206,21 +228,6 @@ public struct NotationCanvasView: View {
             let resolved = context.resolve(Text("\u{1D13D}").font(.system(size: spacing * 2.5)))
             context.draw(resolved, at: center, anchor: .center)
         }
-    }
-
-    private func drawAccidental(
-        context: GraphicsContext, note: LayoutNote, center: CGPoint, spacing: CGFloat
-    ) {
-        let accidentalX = center.x - GlyphPaths.accidentalXOffset(spacing: spacing)
-        let accidentalCenter = CGPoint(x: accidentalX, y: center.y)
-
-        let path: CGPath
-        if note.accidental > 0 {
-            path = GlyphPaths.sharpPath(at: accidentalCenter, spacing: spacing)
-        } else {
-            path = GlyphPaths.flatPath(at: accidentalCenter, spacing: spacing)
-        }
-        context.stroke(Path(path), with: .color(.primary), lineWidth: 1.2)
     }
 
     private func drawLyric(context: GraphicsContext, text: String, noteX: CGFloat, staffY: CGFloat)
