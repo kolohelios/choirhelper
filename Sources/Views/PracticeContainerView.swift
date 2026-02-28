@@ -1,4 +1,5 @@
 import Models
+import Notation
 import Playback
 import SwiftUI
 
@@ -17,6 +18,8 @@ public struct PracticeContainerView: View {
     public var body: some View {
         VStack(spacing: 0) {
             scoreHeader
+            Divider()
+            NotationPracticeView(score: score, currentBeat: currentBeat)
             Divider()
             ScrollView {
                 VStack(spacing: 16) {

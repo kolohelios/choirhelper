@@ -3,138 +3,64 @@
 import PackageDescription
 
 let package = Package(
-    name: "ChoirHelper",
-    platforms: [
-        .macOS(.v15),
-        .iOS(.v18),
-    ],
+    name: "ChoirHelper", platforms: [.macOS(.v15), .iOS(.v18)],
     products: [
         .library(
             name: "ChoirHelperKit",
-            targets: [
-                "Models",
-                "MusicXML",
-                "OpenRouter",
-                "SheetMusicOCR",
-                "Playback",
-                "Storage",
-            ]
-        )
+            targets: ["Models", "MusicXML", "OpenRouter", "SheetMusicOCR", "Playback", "Storage"])
     ],
     targets: [
         // App - SwiftUI app entry point
         .executableTarget(
             name: "App",
-            dependencies: [
-                "Models",
-                "MusicXML",
-                "OpenRouter",
-                "Playback",
-                "Storage",
-                "Views",
-            ],
-            path: "Sources/App",
-            resources: [
-                .copy("../../Resources/ExamplePieces"),
-            ]
-        ),
+            dependencies: ["Models", "MusicXML", "OpenRouter", "Playback", "Storage", "Views"],
+            path: "Sources/App", resources: [.copy("../../Resources/ExamplePieces")]),
 
         // Views - SwiftUI view components
         .target(
-            name: "Views",
-            dependencies: [
-                "Models",
-                "Playback",
-                "Storage",
-            ],
-            path: "Sources/Views"
-        ),
+            name: "Views", dependencies: ["Models", "Notation", "Playback", "Storage"],
+            path: "Sources/Views"),
 
         // Models - Domain types (zero dependencies)
-        .target(
-            name: "Models",
-            dependencies: [],
-            path: "Sources/Models"
-        ),
+        .target(name: "Models", dependencies: [], path: "Sources/Models"),
 
         // MusicXML - SAX parser for MusicXML files
-        .target(
-            name: "MusicXML",
-            dependencies: ["Models"],
-            path: "Sources/MusicXML"
-        ),
+        .target(name: "MusicXML", dependencies: ["Models"], path: "Sources/MusicXML"),
 
         // OpenRouter - AI API client (BYOK)
-        .target(
-            name: "OpenRouter",
-            dependencies: ["Models"],
-            path: "Sources/OpenRouter"
-        ),
+        .target(name: "OpenRouter", dependencies: ["Models"], path: "Sources/OpenRouter"),
 
         // SheetMusicOCR - Photo → MusicXML pipeline
         .target(
-            name: "SheetMusicOCR",
-            dependencies: ["OpenRouter", "Models"],
-            path: "Sources/SheetMusicOCR"
-        ),
+            name: "SheetMusicOCR", dependencies: ["OpenRouter", "Models"],
+            path: "Sources/SheetMusicOCR"),
 
         // Playback - AVAudioEngine-based MIDI playback
-        .target(
-            name: "Playback",
-            dependencies: ["Models"],
-            path: "Sources/Playback"
-        ),
+        .target(name: "Playback", dependencies: ["Models"], path: "Sources/Playback"),
 
         // Storage - iCloud Documents persistence + Keychain
-        .target(
-            name: "Storage",
-            dependencies: ["Models"],
-            path: "Sources/Storage"
-        ),
+        .target(name: "Storage", dependencies: ["Models"], path: "Sources/Storage"),
 
         // Notation - Native SwiftUI music notation renderer
-        .target(
-            name: "Notation",
-            dependencies: ["Models"],
-            path: "Sources/Notation"
-        ),
+        .target(name: "Notation", dependencies: ["Models"], path: "Sources/Notation"),
 
         // Tests
+        .testTarget(name: "ModelsTests", dependencies: ["Models"], path: "Tests/ModelsTests"),
         .testTarget(
-            name: "ModelsTests",
-            dependencies: ["Models"],
-            path: "Tests/ModelsTests"
+            name: "MusicXMLTests", dependencies: ["MusicXML", "Models"], path: "Tests/MusicXMLTests"
         ),
         .testTarget(
-            name: "MusicXMLTests",
-            dependencies: ["MusicXML", "Models"],
-            path: "Tests/MusicXMLTests"
+            name: "OpenRouterTests", dependencies: ["OpenRouter", "Models"],
+            path: "Tests/OpenRouterTests"),
+        .testTarget(
+            name: "PlaybackTests", dependencies: ["Playback", "Models"], path: "Tests/PlaybackTests"
         ),
         .testTarget(
-            name: "OpenRouterTests",
-            dependencies: ["OpenRouter", "Models"],
-            path: "Tests/OpenRouterTests"
-        ),
+            name: "SheetMusicOCRTests", dependencies: ["SheetMusicOCR", "OpenRouter", "Models"],
+            path: "Tests/SheetMusicOCRTests"),
         .testTarget(
-            name: "PlaybackTests",
-            dependencies: ["Playback", "Models"],
-            path: "Tests/PlaybackTests"
-        ),
+            name: "StorageTests", dependencies: ["Storage", "Models"], path: "Tests/StorageTests"),
         .testTarget(
-            name: "SheetMusicOCRTests",
-            dependencies: ["SheetMusicOCR", "OpenRouter", "Models"],
-            path: "Tests/SheetMusicOCRTests"
+            name: "NotationTests", dependencies: ["Notation", "Models"], path: "Tests/NotationTests"
         ),
-        .testTarget(
-            name: "StorageTests",
-            dependencies: ["Storage", "Models"],
-            path: "Tests/StorageTests"
-        ),
-        .testTarget(
-            name: "NotationTests",
-            dependencies: ["Notation", "Models"],
-            path: "Tests/NotationTests"
-        ),
-    ],
-    swiftLanguageModes: [.v6]
-)
+    ], swiftLanguageModes: [.v6])

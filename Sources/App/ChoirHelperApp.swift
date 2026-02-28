@@ -1,3 +1,6 @@
+#if canImport(AppKit)
+import AppKit
+#endif
 import Models
 import MusicXML
 import Playback
@@ -8,7 +11,12 @@ import SwiftUI
     @State private var scoreLibrary: [Score] = []
     @State private var selectedScore: Score?
 
-    public init() {}
+    public init() {
+        #if canImport(AppKit)
+        NSApplication.shared.setActivationPolicy(.regular)
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        #endif
+    }
 
     public var body: some Scene {
         WindowGroup {
@@ -23,19 +31,17 @@ import SwiftUI
         let scores = (try? await storage.loadAll()) ?? []
 
         if scores.isEmpty {
-            // Load bundled Amazing Grace
-            if let score = loadBundledAmazingGrace() { scoreLibrary = [score] }
+            if let score = loadBundledExample() { scoreLibrary = [score] }
         } else {
             scoreLibrary = scores
         }
     }
 
-    private func loadBundledAmazingGrace() -> Score? {
-        // Try SPM resource bundle first, then main bundle
+    private func loadBundledExample() -> Score? {
         let bundle = Bundle.module
         guard
             let url = bundle.url(
-                forResource: "amazing_grace", withExtension: "musicxml",
+                forResource: "ode_to_joy", withExtension: "musicxml",
                 subdirectory: "ExamplePieces")
         else { return nil }
 
