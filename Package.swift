@@ -38,10 +38,7 @@ let package = Package(
         // Playback - AVAudioEngine-based MIDI playback
         .target(
             name: "Playback", dependencies: ["Models"], path: "Sources/Playback",
-            resources: [
-                .copy("Resources/GeneralUser.sf2"),
-                .copy("Resources/GeneralUser-LICENSE.txt"),
-            ]),
+            exclude: ["Resources"]),
 
         // Storage - iCloud Documents persistence + Keychain
         .target(name: "Storage", dependencies: ["Models"], path: "Sources/Storage"),
