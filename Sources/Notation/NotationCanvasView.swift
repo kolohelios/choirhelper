@@ -131,16 +131,22 @@ public struct NotationCanvasView: View {
     private func drawTimeSignature(context: GraphicsContext, staffY: CGFloat) {
         guard let ts = timeSignature else { return }
 
-        // Only draw when the layout reserved space for it (first line).
-        let sigThreshold = StaffGeometry.clefWidth + StaffGeometry.keySignatureWidth
+        // Determine whether this line has key signature space reserved (first line) or not.
+        // On the first line: clef + key signature + time signature precede the first measure.
+        // On subsequent lines: clef + time signature precede the first measure (no key signature).
+        let firstLineThreshold = StaffGeometry.clefWidth + StaffGeometry.keySignatureWidth
             + StaffGeometry.timeSignatureWidth
-        guard let firstMeasureX = line.measures.first?.x, firstMeasureX >= sigThreshold - 1 else {
-            return
-        }
+        guard let firstMeasureX = line.measures.first?.x else { return }
+        let isFirstLine = firstMeasureX >= firstLineThreshold - 1
 
         let spacing = staffGeometry.staffSpacing
-        let centerX = StaffGeometry.clefWidth + StaffGeometry.keySignatureWidth
-            + StaffGeometry.timeSignatureWidth / 2
+        let centerX: CGFloat
+        if isFirstLine {
+            centerX = StaffGeometry.clefWidth + StaffGeometry.keySignatureWidth
+                + StaffGeometry.timeSignatureWidth / 2
+        } else {
+            centerX = StaffGeometry.clefWidth + StaffGeometry.timeSignatureWidth / 2
+        }
         let fontSize = spacing * 2.8
 
         // Top number (beats) centered on upper half of staff
