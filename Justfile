@@ -9,7 +9,7 @@ format:
     @echo "📝 Formatting Swift code..."
     swift-format --in-place --recursive Sources Tests
     @echo "📝 Formatting markdown docs..."
-    markdownlint-cli2 --fix "**/*.md" "#.build" "#node_modules" "#.beads"
+    markdownlint-cli2 --fix "**/*.md" "#.build" "#node_modules" "#.beads" "#PLAN.md"
     @echo "✅ Formatting complete"
 
 # Run all linters
@@ -17,7 +17,7 @@ lint:
     @echo "🔍 Running SwiftLint..."
     swiftlint lint --strict
     @echo "🔍 Running markdownlint..."
-    markdownlint-cli2 "**/*.md" "#.build" "#node_modules" "#.beads"
+    markdownlint-cli2 "**/*.md" "#.build" "#node_modules" "#.beads" "#PLAN.md"
     @echo "✅ Linting complete"
 
 # Format check (for CI)
@@ -25,7 +25,7 @@ format-check:
     @echo "🔍 Checking Swift formatting..."
     swift-format lint --recursive Sources Tests
     @echo "🔍 Checking markdown formatting..."
-    markdownlint-cli2 "**/*.md" "#.build" "#node_modules" "#.beads"
+    markdownlint-cli2 "**/*.md" "#.build" "#node_modules" "#.beads" "#PLAN.md"
     @echo "✅ Format check complete"
 
 # Run all tests with code coverage
