@@ -168,3 +168,83 @@ import Testing
         #expect(PlaybackState.playing != PlaybackState.paused)
     }
 }
+
+@Suite("MIDISchedule.eventIndex") struct MIDIScheduleEventIndexTests {
+    static func makeSchedule() -> MIDISchedule {
+        let events = [
+            MIDIEvent(
+                partIndex: 0, midiNote: 60, velocity: 80, startBeat: 0.0, durationBeats: 1.0,
+                measureNumber: 1, noteIndex: 0),
+            MIDIEvent(
+                partIndex: 0, midiNote: 62, velocity: 80, startBeat: 1.0, durationBeats: 1.0,
+                measureNumber: 1, noteIndex: 1),
+            MIDIEvent(
+                partIndex: 0, midiNote: 64, velocity: 80, startBeat: 2.0, durationBeats: 1.0,
+                measureNumber: 1, noteIndex: 2),
+            MIDIEvent(
+                partIndex: 0, midiNote: 65, velocity: 80, startBeat: 3.0, durationBeats: 1.0,
+                measureNumber: 1, noteIndex: 3),
+        ]
+        return MIDISchedule(events: events, totalBeats: 4.0, tempo: 120)
+    }
+
+    @Test("Finds first event at exact beat boundary") func exactBoundary() {
+        let schedule = MIDIScheduleEventIndexTests.makeSchedule()
+        #expect(schedule.eventIndex(forBeat: 0.0) == 0)
+        #expect(schedule.eventIndex(forBeat: 2.0) == 2)
+    }
+
+    @Test("Finds next event for mid-beat position") func midBeat() {
+        let schedule = MIDIScheduleEventIndexTests.makeSchedule()
+        #expect(schedule.eventIndex(forBeat: 1.5) == 2)
+    }
+
+    @Test("Returns events.count when past all events") func pastEnd() {
+        let schedule = MIDIScheduleEventIndexTests.makeSchedule()
+        #expect(schedule.eventIndex(forBeat: 10.0) == 4)
+    }
+
+    @Test("Returns 0 for beat 0") func beatZero() {
+        let schedule = MIDIScheduleEventIndexTests.makeSchedule()
+        #expect(schedule.eventIndex(forBeat: 0.0) == 0)
+    }
+}
+
+@Suite("MIDISchedule.eventIndex — seek support") struct MIDIScheduleSeekTests {
+    private static func makeSchedule() -> MIDISchedule {
+        MIDIScheduleEventIndexTests.makeSchedule()
+    }
+
+    @Test("eventIndex skips past played events on seek") func seekSkipsPlayed() {
+        let schedule = MIDIScheduleSeekTests.makeSchedule()
+        // Seeking to beat 2.5 means events at beats 0, 1, 2 are in the past
+        let idx = schedule.eventIndex(forBeat: 2.5)
+        #expect(idx == 3)
+        // The event at this index is beat 3.0
+        #expect(schedule.events[idx].startBeat == 3.0)
+    }
+
+    @Test("eventIndex at start returns 0") func seekToStart() {
+        let schedule = MIDIScheduleSeekTests.makeSchedule()
+        #expect(schedule.eventIndex(forBeat: 0.0) == 0)
+    }
+
+    @Test("eventIndex at end returns count") func seekToEnd() {
+        let schedule = MIDIScheduleSeekTests.makeSchedule()
+        #expect(schedule.eventIndex(forBeat: schedule.totalBeats) == schedule.events.count)
+    }
+}
+
+@Suite("PlaybackEngine — no audio") struct PlaybackEngineNoAudioTests {
+    @Test("totalBeats is zero before loading") func totalBeatsEmpty() async {
+        let engine = PlaybackEngine()
+        let total = await engine.totalBeats
+        #expect(total == 0)
+    }
+
+    @Test("Initial state is stopped") func initialState() async {
+        let engine = PlaybackEngine()
+        let state = await engine.state
+        #expect(state == .stopped)
+    }
+}
