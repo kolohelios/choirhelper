@@ -12,6 +12,8 @@ public struct PracticeContainerView: View {
     @State private var tempo: Int = 120
     @State private var engine: PlaybackEngine?
     @State private var errorMessage: String?
+    @State private var isScrubbing = false
+    @State private var totalBeats: Double = 1
 
     public init(score: Score) { self.score = score }
 
@@ -19,11 +21,14 @@ public struct PracticeContainerView: View {
         VStack(spacing: 0) {
             scoreHeader
             Divider()
-            NotationPracticeView(score: score, currentBeat: currentBeat)
+            NotationPracticeView(score: score, currentBeat: currentBeat) { beat in
+                Task { await seekTo(beat: beat) }
+            }
             Divider()
             ScrollView {
                 VStack(spacing: 16) {
                     transportControls
+                    scrubControl
                     tempoControl
                     volumeControls
                 }.padding()
@@ -70,6 +75,26 @@ public struct PracticeContainerView: View {
             }
 
             Text(formatBeat(currentBeat)).font(.system(.title3, design: .monospaced))
+                .foregroundStyle(.secondary)
+        }.padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var scrubControl: some View {
+        VStack(alignment: .leading) {
+            Slider(
+                value: Binding(
+                    get: { currentBeat },
+                    set: { newBeat in
+                        isScrubbing = true
+                        currentBeat = newBeat
+                        Task {
+                            await seekTo(beat: newBeat)
+                            isScrubbing = false
+                        }
+                    }), in: 0...totalBeats
+            )
+            Text(formatBeat(currentBeat))
+                .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.secondary)
         }.padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
@@ -126,6 +151,7 @@ public struct PracticeContainerView: View {
             try await newEngine.load(score: score)
             engine = newEngine
             tempo = score.tempo
+            totalBeats = max(await newEngine.totalBeats, 1)
             partVolumes = Array(repeating: Float(1.0), count: score.parts.count)
             partMuted = Array(repeating: false, count: score.parts.count)
         } catch { errorMessage = error.localizedDescription }
@@ -165,10 +191,22 @@ public struct PracticeContainerView: View {
         Task { await engine?.setPartVolume(partIndex: index, volume: volume) }
     }
 
+    private func seekTo(beat: Double) async {
+        guard let engine else { return }
+        do {
+            try await engine.seek(toBeat: beat)
+            let state = await engine.state
+            playbackState = state
+            if state == .playing {
+                startBeatTracking()
+            }
+        } catch { errorMessage = error.localizedDescription }
+    }
+
     private func startBeatTracking() {
         Task {
             while playbackState == .playing {
-                if let engine {
+                if let engine, !isScrubbing {
                     currentBeat = await engine.currentBeat
                     let state = await engine.state
                     if state != .playing { playbackState = state }

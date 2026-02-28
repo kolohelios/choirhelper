@@ -8,15 +8,17 @@ public struct TeleprompterView: View {
     let currentBeat: Double
     let showLyrics: Bool
     let showMeasureNumbers: Bool
+    let onSeek: ((Double) -> Void)?
 
     public init(
         layout: NotationLayout, currentBeat: Double, showLyrics: Bool = true,
-        showMeasureNumbers: Bool = true
+        showMeasureNumbers: Bool = true, onSeek: ((Double) -> Void)? = nil
     ) {
         self.layout = layout
         self.currentBeat = currentBeat
         self.showLyrics = showLyrics
         self.showMeasureNumbers = showMeasureNumbers
+        self.onSeek = onSeek
     }
 
     private var currentLineIndex: Int { layout.lineIndex(forBeat: currentBeat) ?? 0 }
@@ -36,11 +38,21 @@ public struct TeleprompterView: View {
 
     @ViewBuilder private func lineView(at index: Int, opacity: Double) -> some View {
         if index >= 0, index < layout.lines.count {
+            let line = layout.lines[index]
             NotationCanvasView(
-                line: layout.lines[index], staffGeometry: layout.staffGeometry,
+                line: line, staffGeometry: layout.staffGeometry,
                 currentBeat: opacity == 1.0 ? currentBeat : nil, showLyrics: showLyrics,
                 showMeasureNumbers: showMeasureNumbers
-            ).opacity(opacity).id(index)
+            ).opacity(opacity).id(index).overlay {
+                if let onSeek {
+                    Color.clear.contentShape(Rectangle())
+                        .onTapGesture { location in
+                            if let beat = line.beatPosition(forX: location.x) {
+                                onSeek(beat)
+                            }
+                        }
+                }
+            }
         } else {
             // Empty placeholder to maintain layout
             Color.clear.frame(height: layout.staffGeometry.staffSpacing * 8)
