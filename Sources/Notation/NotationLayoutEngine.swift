@@ -49,7 +49,9 @@ public struct NotationLayoutEngine: Sendable {
             let isFirstLine = lines.isEmpty
             let leadingWidth =
                 isFirstLine
-                ? StaffGeometry.clefWidth + StaffGeometry.signatureWidth : StaffGeometry.clefWidth
+                ? StaffGeometry.clefWidth + StaffGeometry.keySignatureWidth
+                    + StaffGeometry.timeSignatureWidth
+                : StaffGeometry.clefWidth
 
             var usedWidth = leadingWidth
             var lineEnd = lineStart

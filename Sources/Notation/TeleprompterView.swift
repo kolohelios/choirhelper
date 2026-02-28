@@ -5,16 +5,22 @@ import SwiftUI
 /// Auto-advances as playback progresses.
 public struct TeleprompterView: View {
     let layout: NotationLayout
+    let keySignature: KeySignature
+    let timeSignature: TimeSignature?
     let currentBeat: Double
     let showLyrics: Bool
     let showMeasureNumbers: Bool
     let onSeek: ((Double) -> Void)?
 
     public init(
-        layout: NotationLayout, currentBeat: Double, showLyrics: Bool = true,
+        layout: NotationLayout, keySignature: KeySignature = KeySignature(fifths: 0),
+        timeSignature: TimeSignature? = nil,
+        currentBeat: Double, showLyrics: Bool = true,
         showMeasureNumbers: Bool = true, onSeek: ((Double) -> Void)? = nil
     ) {
         self.layout = layout
+        self.keySignature = keySignature
+        self.timeSignature = timeSignature
         self.currentBeat = currentBeat
         self.showLyrics = showLyrics
         self.showMeasureNumbers = showMeasureNumbers
@@ -40,7 +46,8 @@ public struct TeleprompterView: View {
         if index >= 0, index < layout.lines.count {
             let line = layout.lines[index]
             NotationCanvasView(
-                line: line, staffGeometry: layout.staffGeometry,
+                line: line, staffGeometry: layout.staffGeometry, keySignature: keySignature,
+                timeSignature: timeSignature,
                 currentBeat: opacity == 1.0 ? currentBeat : nil, showLyrics: showLyrics,
                 showMeasureNumbers: showMeasureNumbers
             ).opacity(opacity).id(index).overlay {

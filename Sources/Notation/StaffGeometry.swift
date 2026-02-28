@@ -21,8 +21,11 @@ public struct StaffGeometry: Sendable {
     /// Width reserved for the clef symbol at the start of a line.
     public static let clefWidth: CGFloat = 32.0
 
-    /// Width reserved for key/time signature after clef.
-    public static let signatureWidth: CGFloat = 24.0
+    /// Width reserved for the key signature after the clef.
+    public static let keySignatureWidth: CGFloat = 24.0
+
+    /// Width reserved for the time signature after the key signature.
+    public static let timeSignatureWidth: CGFloat = 24.0
 
     /// Padding at the start and end of each measure.
     public static let measurePadding: CGFloat = 8.0
@@ -113,4 +116,28 @@ public struct StaffGeometry: Sendable {
 
     /// Y position of a staff line by index (0 = top line, 4 = bottom line).
     public func lineY(_ lineIndex: Int) -> CGFloat { CGFloat(lineIndex) * staffSpacing }
+
+    /// Diatonic indices for key signature accidentals on this clef.
+    /// Returns an array of length `abs(fifths)` giving the staff position
+    /// for each sharp (fifths > 0) or flat (fifths < 0).
+    public func keySignaturePositions(fifths: Int) -> [Int] {
+        guard fifths != 0 else { return [] }
+
+        // Standard positions per clef. Each accidental is placed to stay
+        // within the staff, following the traditional zigzag pattern.
+        let trebleSharps = [38, 35, 32, 36, 33, 37, 34]  // F5 C5 G4 D5 A4 E5 B4
+        let trebleFlats  = [34, 37, 33, 36, 32, 35, 31]   // B4 E5 A4 D5 G4 C5 F4
+        let bassSharps   = [24, 21, 25, 22, 19, 23, 20]   // F3 C3 G3 D3 A2 E3 B2
+        let bassFlats    = [20, 23, 19, 22, 18, 21, 24]   // B2 E3 A2 D3 G2 C3 F3
+
+        let positions: [Int]
+        switch (clefType, fifths > 0) {
+        case (.treble, true):  positions = trebleSharps
+        case (.treble, false): positions = trebleFlats
+        case (.bass, true):    positions = bassSharps
+        case (.bass, false):   positions = bassFlats
+        }
+
+        return Array(positions.prefix(abs(fifths)))
+    }
 }

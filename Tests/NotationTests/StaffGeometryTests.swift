@@ -126,4 +126,39 @@ import Testing
         #expect(PartType.tenor.clefType == .treble)
         #expect(PartType.piano.clefType == .treble)
     }
+
+    // MARK: - Key Signature Positions
+
+    @Test("C major (0 fifths) returns empty positions") func keySigCMajor() {
+        let geo = StaffGeometry(clefType: .treble)
+        #expect(geo.keySignaturePositions(fifths: 0).isEmpty)
+    }
+
+    @Test("G major (1 sharp) returns F5 position in treble clef") func keySigGMajor() {
+        let geo = StaffGeometry(clefType: .treble)
+        let positions = geo.keySignaturePositions(fifths: 1)
+        #expect(positions.count == 1)
+        #expect(positions[0] == 38)  // F5
+    }
+
+    @Test("D major (2 sharps) returns F5 and C5 in treble clef") func keySigDMajor() {
+        let geo = StaffGeometry(clefType: .treble)
+        let positions = geo.keySignaturePositions(fifths: 2)
+        #expect(positions.count == 2)
+        #expect(positions == [38, 35])  // F5, C5
+    }
+
+    @Test("Bb major (2 flats) returns B4 and E5 in treble clef") func keySigBbMajor() {
+        let geo = StaffGeometry(clefType: .treble)
+        let positions = geo.keySignaturePositions(fifths: -2)
+        #expect(positions.count == 2)
+        #expect(positions == [34, 37])  // B4, E5
+    }
+
+    @Test("Bass clef sharp positions differ from treble") func keySigBassClef() {
+        let geo = StaffGeometry(clefType: .bass)
+        let positions = geo.keySignaturePositions(fifths: 1)
+        #expect(positions.count == 1)
+        #expect(positions[0] == 24)  // F3
+    }
 }

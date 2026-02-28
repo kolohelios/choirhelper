@@ -5,16 +5,21 @@ import SwiftUI
 public struct NotationCanvasView: View {
     let line: LayoutLine
     let staffGeometry: StaffGeometry
+    let keySignature: KeySignature
+    let timeSignature: TimeSignature?
     let currentBeat: Double?
     let showLyrics: Bool
     let showMeasureNumbers: Bool
 
     public init(
-        line: LayoutLine, staffGeometry: StaffGeometry, currentBeat: Double? = nil,
-        showLyrics: Bool = true, showMeasureNumbers: Bool = true
+        line: LayoutLine, staffGeometry: StaffGeometry, keySignature: KeySignature = KeySignature(fifths: 0),
+        timeSignature: TimeSignature? = nil,
+        currentBeat: Double? = nil, showLyrics: Bool = true, showMeasureNumbers: Bool = true
     ) {
         self.line = line
         self.staffGeometry = staffGeometry
+        self.keySignature = keySignature
+        self.timeSignature = timeSignature
         self.currentBeat = currentBeat
         self.showLyrics = showLyrics
         self.showMeasureNumbers = showMeasureNumbers
@@ -33,6 +38,8 @@ public struct NotationCanvasView: View {
 
             drawStaffLines(context: context, staffY: staffY, width: size.width)
             drawClef(context: context, staffY: staffY)
+            drawKeySignature(context: context, staffY: staffY)
+            drawTimeSignature(context: context, staffY: staffY)
 
             for measure in line.measures {
                 drawBarline(context: context, x: measure.x, staffY: staffY)
@@ -94,6 +101,59 @@ public struct NotationCanvasView: View {
         context.draw(
             resolved, at: CGPoint(x: StaffGeometry.clefWidth / 2, y: staffY + yOffset), anchor: .top
         )
+    }
+
+    private func drawKeySignature(context: GraphicsContext, staffY: CGFloat) {
+        let fifths = keySignature.fifths
+        guard fifths != 0 else { return }
+
+        let spacing = staffGeometry.staffSpacing
+        let accidentalCount = abs(fifths)
+        let positions = staffGeometry.keySignaturePositions(fifths: fifths)
+        let startX = StaffGeometry.clefWidth + spacing * 0.5
+        let step = min(spacing * 1.2, (StaffGeometry.keySignatureWidth - spacing) / CGFloat(accidentalCount))
+
+        for (index, diatonicIndex) in positions.enumerated() {
+            let x = startX + CGFloat(index) * step
+            let y = staffY + staffGeometry.yPosition(forDiatonicIndex: diatonicIndex)
+            let center = CGPoint(x: x, y: y)
+
+            let path: CGPath
+            if fifths > 0 {
+                path = GlyphPaths.sharpPath(at: center, spacing: spacing)
+            } else {
+                path = GlyphPaths.flatPath(at: center, spacing: spacing)
+            }
+            context.stroke(Path(path), with: .color(.primary), lineWidth: 1.2)
+        }
+    }
+
+    private func drawTimeSignature(context: GraphicsContext, staffY: CGFloat) {
+        guard let ts = timeSignature else { return }
+
+        // Only draw when the layout reserved space for it (first line).
+        let sigThreshold = StaffGeometry.clefWidth + StaffGeometry.keySignatureWidth
+            + StaffGeometry.timeSignatureWidth
+        guard let firstMeasureX = line.measures.first?.x, firstMeasureX >= sigThreshold - 1 else {
+            return
+        }
+
+        let spacing = staffGeometry.staffSpacing
+        let centerX = StaffGeometry.clefWidth + StaffGeometry.keySignatureWidth
+            + StaffGeometry.timeSignatureWidth / 2
+        let fontSize = spacing * 2.8
+
+        // Top number (beats) centered on upper half of staff
+        let topY = staffY + spacing  // Between lines 1 and 2
+        let topResolved = context.resolve(
+            Text("\(ts.beats)").font(.system(size: fontSize, weight: .bold, design: .serif)))
+        context.draw(topResolved, at: CGPoint(x: centerX, y: topY), anchor: .center)
+
+        // Bottom number (beat type) centered on lower half of staff
+        let bottomY = staffY + spacing * 3  // Between lines 3 and 4
+        let bottomResolved = context.resolve(
+            Text("\(ts.beatType)").font(.system(size: fontSize, weight: .bold, design: .serif)))
+        context.draw(bottomResolved, at: CGPoint(x: centerX, y: bottomY), anchor: .center)
     }
 
     private func drawBarline(context: GraphicsContext, x: CGFloat, staffY: CGFloat) {

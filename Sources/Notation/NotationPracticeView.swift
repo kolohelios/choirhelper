@@ -62,7 +62,9 @@ public struct NotationPracticeView: View {
                     let layout = engine.layout(part: part)
 
                     TeleprompterView(
-                        layout: layout, currentBeat: currentBeat, showLyrics: showLyrics,
+                        layout: layout, keySignature: score.keySignature,
+                        timeSignature: score.timeSignature,
+                        currentBeat: currentBeat, showLyrics: showLyrics,
                         showMeasureNumbers: showMeasureNumbers, onSeek: onSeek)
                 }.frame(height: primaryPartHeight)
             }
@@ -95,8 +97,9 @@ public struct NotationPracticeView: View {
         let lineIndex = layout.lineIndex(forBeat: currentBeat) ?? 0
         if lineIndex < layout.lines.count {
             NotationCanvasView(
-                line: layout.lines[lineIndex], staffGeometry: staffGeometry, showLyrics: showLyrics,
-                showMeasureNumbers: showMeasureNumbers)
+                line: layout.lines[lineIndex], staffGeometry: staffGeometry,
+                keySignature: score.keySignature, timeSignature: score.timeSignature,
+                showLyrics: showLyrics, showMeasureNumbers: showMeasureNumbers)
         }
     }
 
