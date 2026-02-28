@@ -67,72 +67,73 @@ public struct MIDIScheduler: Sendable {
         var maxBeat: Double = 0
 
         for (partIndex, part) in score.parts.enumerated() {
-            var currentBeat: Double = 0
-
-            // Flatten all notes across measures so we can look ahead for ties.
             let allNotes = part.measures.flatMap { measure in
                 measure.notes.map { (note: $0, measureNumber: measure.number) }
             }
-
-            for (noteIndex, entry) in allNotes.enumerated() {
-                let note = entry.note
-                if !note.isRest {
-                    // If this note is tied forward, accumulate duration with
-                    // the following note(s) rather than emitting now.
-                    if note.isTied {
-                        currentBeat += note.duration
-                        continue
-                    }
-
-                    // Walk backwards to collect duration from preceding tied notes.
-                    var totalDuration = note.duration
-                    var startBeat = currentBeat
-                    var lookback = noteIndex - 1
-                    while lookback >= 0 {
-                        let prev = allNotes[lookback].note
-                        guard prev.isTied, !prev.isRest,
-                            prev.pitches.map(\.midiNumber) == note.pitches.map(\.midiNumber)
-                        else { break }
-                        totalDuration += prev.duration
-                        startBeat -= prev.duration
-                        lookback -= 1
-                    }
-
-                    // Only shorten if the very next entry is the same pitch (not a
-                    // rest, not a different pitch). A rest already provides silence,
-                    // and a different pitch triggers a new MIDI note number so no
-                    // explicit gap is needed. Without this guard every note was
-                    // shortened — including legato passages where it caused audible
-                    // truncation without any benefit.
-                    let nextEntry = noteIndex + 1 < allNotes.count ? allNotes[noteIndex + 1] : nil
-                    let nextIsSamePitch =
-                        nextEntry.map { next in
-                            !next.note.isRest
-                                && next.note.pitches.map(\.midiNumber)
-                                    == note.pitches.map(\.midiNumber)
-                        } ?? false
-                    let gap = nextIsSamePitch
-                        ? min(Self.articulationGap, totalDuration * 0.25) : 0
-                    let sounding = totalDuration - gap
-
-                    let velocity: UInt8 = velocityFor(dynamic: note.dynamic)
-                    for pitch in note.pitches {
-                        let midiNote = UInt8(clamping: pitch.midiNumber)
-                        let event = MIDIEvent(
-                            partIndex: partIndex, midiNote: midiNote, velocity: velocity,
-                            startBeat: startBeat, durationBeats: sounding,
-                            measureNumber: entry.measureNumber, noteIndex: noteIndex)
-                        events.append(event)
-                    }
-                }
-                currentBeat += note.duration
-            }
-            maxBeat = max(maxBeat, currentBeat)
+            let partBeat = schedulePart(
+                allNotes: allNotes, partIndex: partIndex, into: &events)
+            maxBeat = max(maxBeat, partBeat)
         }
 
         events.sort { $0.startBeat < $1.startBeat }
-
         return MIDISchedule(events: events, totalBeats: maxBeat, tempo: score.tempo)
+    }
+
+    private func schedulePart(
+        allNotes: [(note: Note, measureNumber: Int)], partIndex: Int,
+        into events: inout [MIDIEvent]
+    ) -> Double {
+        var currentBeat: Double = 0
+
+        for (noteIndex, entry) in allNotes.enumerated() {
+            let note = entry.note
+            if !note.isRest {
+                if note.isTied {
+                    currentBeat += note.duration
+                    continue
+                }
+
+                var totalDuration = note.duration
+                var startBeat = currentBeat
+                var lookback = noteIndex - 1
+                while lookback >= 0 {
+                    let prev = allNotes[lookback].note
+                    guard prev.isTied, !prev.isRest,
+                        prev.pitches.map(\.midiNumber) == note.pitches.map(\.midiNumber)
+                    else { break }
+                    totalDuration += prev.duration
+                    startBeat -= prev.duration
+                    lookback -= 1
+                }
+
+                let sounding = totalDuration - articulationGap(
+                    noteIndex: noteIndex, allNotes: allNotes, note: note, totalDuration: totalDuration)
+
+                let velocity: UInt8 = velocityFor(dynamic: note.dynamic)
+                for pitch in note.pitches {
+                    let midiNote = UInt8(clamping: pitch.midiNumber)
+                    events.append(MIDIEvent(
+                        partIndex: partIndex, midiNote: midiNote, velocity: velocity,
+                        startBeat: startBeat, durationBeats: sounding,
+                        measureNumber: entry.measureNumber, noteIndex: noteIndex))
+                }
+            }
+            currentBeat += note.duration
+        }
+        return currentBeat
+    }
+
+    private func articulationGap(
+        noteIndex: Int, allNotes: [(note: Note, measureNumber: Int)],
+        note: Note, totalDuration: Double
+    ) -> Double {
+        let nextEntry = noteIndex + 1 < allNotes.count ? allNotes[noteIndex + 1] : nil
+        let nextIsSamePitch =
+            nextEntry.map { next in
+                !next.note.isRest
+                    && next.note.pitches.map(\.midiNumber) == note.pitches.map(\.midiNumber)
+            } ?? false
+        return nextIsSamePitch ? min(Self.articulationGap, totalDuration * 0.25) : 0
     }
 
     private func velocityFor(dynamic: Dynamic?) -> UInt8 {

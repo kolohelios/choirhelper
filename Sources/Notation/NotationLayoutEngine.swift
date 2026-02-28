@@ -173,8 +173,8 @@ public struct NotationLayoutEngine: Sendable {
         } else {
             let middleY = staffGeometry.yPosition(
                 forDiatonicIndex: staffGeometry.middleLineDiatonicIndex)
-            let topY = ys.min()!
-            let bottomY = ys.max()!
+            let topY = ys.min() ?? 0
+            let bottomY = ys.max() ?? 0
             let topDist = abs(topY - middleY)
             let bottomDist = abs(bottomY - middleY)
             stemUp = bottomDist >= topDist

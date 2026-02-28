@@ -56,7 +56,9 @@ public struct NotationPracticeView: View {
                 Text(part.name).font(.caption).foregroundStyle(.secondary).padding(.leading, 8)
 
                 GeometryReader { geo in
-                    let geometry = StaffGeometry(staffSpacing: 8, clefType: part.partType.clefType, octaveTransposition: part.partType.octaveTransposition)
+                    let geometry = StaffGeometry(
+                        staffSpacing: 8, clefType: part.partType.clefType,
+                        octaveTransposition: part.partType.octaveTransposition)
                     let engine = NotationLayoutEngine(
                         staffGeometry: geometry, availableWidth: geo.size.width)
                     let layout = engine.layout(part: part)
@@ -79,7 +81,9 @@ public struct NotationPracticeView: View {
                 Text(part.name).font(.caption2).foregroundStyle(.tertiary).padding(.leading, 8)
 
                 GeometryReader { geo in
-                    let geometry = StaffGeometry(staffSpacing: 5, clefType: part.partType.clefType, octaveTransposition: part.partType.octaveTransposition)
+                    let geometry = StaffGeometry(
+                        staffSpacing: 5, clefType: part.partType.clefType,
+                        octaveTransposition: part.partType.octaveTransposition)
                     let engine = NotationLayoutEngine(
                         staffGeometry: geometry, availableWidth: geo.size.width)
                     let layout = engine.layout(part: part)
