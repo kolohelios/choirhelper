@@ -232,4 +232,126 @@ private let minimalSATBXML = """
         #expect(notes[0].duration == 1.0)  // 2/2 = 1 quarter
         #expect(notes[1].duration == 2.0)  // 4/2 = 2 quarters
     }
+
+    // MARK: - Chord parsing
+
+    @Test("Parses three-note chord as one Note with three pitches") func parsesChordCEG() throws {
+        let xml = """
+            <?xml version="1.0"?>
+            <score-partwise>
+              <part-list>
+                <score-part id="P1"><part-name>Piano</part-name></score-part>
+              </part-list>
+              <part id="P1">
+                <measure number="1">
+                  <attributes><divisions>1</divisions></attributes>
+                  <note>
+                    <pitch><step>C</step><octave>4</octave></pitch>
+                    <duration>1</duration>
+                    <type>quarter</type>
+                  </note>
+                  <note>
+                    <chord/>
+                    <pitch><step>E</step><octave>4</octave></pitch>
+                    <duration>1</duration>
+                    <type>quarter</type>
+                  </note>
+                  <note>
+                    <chord/>
+                    <pitch><step>G</step><octave>4</octave></pitch>
+                    <duration>1</duration>
+                    <type>quarter</type>
+                  </note>
+                </measure>
+              </part>
+            </score-partwise>
+            """
+        let score = try parser.parse(data: Data(xml.utf8))
+        let notes = score.parts[0].measures[0].notes
+        #expect(notes.count == 1)
+        #expect(notes[0].pitches.count == 3)
+        #expect(notes[0].pitches[0].step == .c)
+        #expect(notes[0].pitches[1].step == .e)
+        #expect(notes[0].pitches[2].step == .g)
+    }
+
+    @Test("Mixed chords and single notes produce correct note count") func mixedChordAndSingle()
+        throws
+    {
+        let xml = """
+            <?xml version="1.0"?>
+            <score-partwise>
+              <part-list>
+                <score-part id="P1"><part-name>Piano</part-name></score-part>
+              </part-list>
+              <part id="P1">
+                <measure number="1">
+                  <attributes><divisions>1</divisions></attributes>
+                  <note>
+                    <pitch><step>C</step><octave>4</octave></pitch>
+                    <duration>1</duration>
+                    <type>quarter</type>
+                  </note>
+                  <note>
+                    <chord/>
+                    <pitch><step>E</step><octave>4</octave></pitch>
+                    <duration>1</duration>
+                    <type>quarter</type>
+                  </note>
+                  <note>
+                    <pitch><step>D</step><octave>4</octave></pitch>
+                    <duration>1</duration>
+                    <type>quarter</type>
+                  </note>
+                  <note>
+                    <pitch><step>E</step><octave>4</octave></pitch>
+                    <duration>2</duration>
+                    <type>half</type>
+                  </note>
+                </measure>
+              </part>
+            </score-partwise>
+            """
+        let score = try parser.parse(data: Data(xml.utf8))
+        let notes = score.parts[0].measures[0].notes
+        // C+E chord (1 note), D single, E single = 3 notes
+        #expect(notes.count == 3)
+        #expect(notes[0].pitches.count == 2)
+        #expect(notes[0].isChord)
+        #expect(notes[1].pitches.count == 1)
+        #expect(!notes[1].isChord)
+        #expect(notes[2].pitches.count == 1)
+    }
+
+    @Test("Chord inherits previous note's duration") func chordInheritsDuration() throws {
+        let xml = """
+            <?xml version="1.0"?>
+            <score-partwise>
+              <part-list>
+                <score-part id="P1"><part-name>Piano</part-name></score-part>
+              </part-list>
+              <part id="P1">
+                <measure number="1">
+                  <attributes><divisions>1</divisions></attributes>
+                  <note>
+                    <pitch><step>C</step><octave>4</octave></pitch>
+                    <duration>2</duration>
+                    <type>half</type>
+                  </note>
+                  <note>
+                    <chord/>
+                    <pitch><step>E</step><octave>4</octave></pitch>
+                    <duration>2</duration>
+                    <type>half</type>
+                  </note>
+                </measure>
+              </part>
+            </score-partwise>
+            """
+        let score = try parser.parse(data: Data(xml.utf8))
+        let notes = score.parts[0].measures[0].notes
+        #expect(notes.count == 1)
+        #expect(notes[0].duration == 2.0)
+        #expect(notes[0].noteType == .half)
+    }
 }
