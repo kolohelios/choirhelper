@@ -24,7 +24,6 @@ public protocol PlaybackEngineProtocol: Sendable {
 
 public actor PlaybackEngine: PlaybackEngineProtocol {
     private let engine: AVAudioEngine
-    private let soundFontManager: SoundFontManagerProtocol
     private var samplers: [AVAudioUnitSampler] = []
     private var mixerNodes: [AVAudioMixerNode] = []
 
@@ -50,9 +49,8 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
     private var partMuted: [Bool] = []
     private var currentTempo: Int = 120
 
-    public init(soundFontManager: SoundFontManagerProtocol = SoundFontManager()) {
+    public init() {
         self.engine = AVAudioEngine()
-        self.soundFontManager = soundFontManager
     }
 
     public func load(score: Score) throws {
@@ -67,16 +65,7 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
         self.schedule = scheduler.schedule(score: score)
 
         try setupAudioGraph(partCount: score.parts.count)
-
-        if let sfURL = soundFontManager.soundFontURL {
-            for (index, sampler) in samplers.enumerated() {
-                let program = score.parts[index].midiProgram
-                try sampler.loadSoundBankInstrument(
-                    at: sfURL, program: program, bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
-                    bankLSB: UInt8(kAUSampler_DefaultBankLSB))
-            }
-        }
-
+        loadSystemBank(score: score)
         try setupSequencer(partCount: score.parts.count)
         baseTempo = Double(score.tempo)
 
@@ -152,6 +141,27 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
         if state == .playing, let sequencer {
             sequencer.rate = Float(Double(currentTempo) / baseTempo)
         }
+    }
+
+    // MARK: - Instrument loading
+
+    #if os(macOS)
+    private static let systemBankURL = URL(
+        filePath: "/System/Library/Components/CoreAudio.component/Contents/Resources/gs_instruments.dls"
+    )
+    #endif
+
+    private func loadSystemBank(score: Score) {
+        #if os(macOS)
+        guard FileManager.default.fileExists(atPath: Self.systemBankURL.path()) else { return }
+        for (index, sampler) in samplers.enumerated() {
+            let program = score.parts[index].midiProgram
+            try? sampler.loadSoundBankInstrument(
+                at: Self.systemBankURL, program: program,
+                bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
+                bankLSB: UInt8(kAUSampler_DefaultBankLSB))
+        }
+        #endif
     }
 
     // MARK: - Audio Graph
