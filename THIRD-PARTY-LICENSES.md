@@ -11,6 +11,18 @@
 - **Attribution**: Score typeset uploaded to IMSLP. Used under CC BY 4.0 license.
 - **Usage**: Bundled as an integration test fixture for sheet music OCR testing.
 
+## GeneralUser GS SoundFont
+
+- **File**: `Sources/Playback/Resources/GeneralUser.sf2`
+- **Source**: [GeneralUser GS](https://schristiancollins.com/generaluser.php) by S. Christian Collins
+- **Version**: 2.0.3
+- **Repository**: [mrbumpy409/GeneralUser-GS](https://github.com/mrbumpy409/GeneralUser-GS)
+- **License**: GeneralUser GS License v2.0 (permissive)
+- **License summary**: Free to use in software projects, private or commercial.
+  May be modified and repackaged.
+  See `Sources/Playback/Resources/GeneralUser-LICENSE.txt` for full terms.
+- **Usage**: Bundled as the General MIDI SoundFont for MIDI playback of sheet music parts.
+
 ## Amazing Grace MusicXML
 
 - **File**: `Resources/ExamplePieces/amazing_grace.musicxml`
