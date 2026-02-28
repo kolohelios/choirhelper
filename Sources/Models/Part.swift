@@ -23,6 +23,11 @@ public struct Part: Codable, Sendable, Identifiable, Hashable {
     public var isVocal: Bool { partType.isVocal }
 }
 
+public enum ClefType: String, Codable, Sendable {
+    case treble
+    case bass
+}
+
 public enum PartType: String, Codable, Sendable, CaseIterable, Hashable {
     case soprano
     case alto
@@ -71,6 +76,13 @@ public enum PartType: String, Codable, Sendable, CaseIterable, Hashable {
         switch self {
         case .piano, .accompaniment: 0
         default: 52
+        }
+    }
+
+    public var clefType: ClefType {
+        switch self {
+        case .bass, .bass1, .bass2: .bass
+        default: .treble
         }
     }
 }

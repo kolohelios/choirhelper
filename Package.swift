@@ -92,6 +92,13 @@ let package = Package(
             path: "Sources/Storage"
         ),
 
+        // Notation - Native SwiftUI music notation renderer
+        .target(
+            name: "Notation",
+            dependencies: ["Models"],
+            path: "Sources/Notation"
+        ),
+
         // Tests
         .testTarget(
             name: "ModelsTests",
@@ -122,6 +129,11 @@ let package = Package(
             name: "StorageTests",
             dependencies: ["Storage", "Models"],
             path: "Tests/StorageTests"
+        ),
+        .testTarget(
+            name: "NotationTests",
+            dependencies: ["Notation", "Models"],
+            path: "Tests/NotationTests"
         ),
     ],
     swiftLanguageModes: [.v6]
