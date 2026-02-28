@@ -53,9 +53,14 @@ public struct MIDISchedule: Sendable {
 public struct MIDIScheduler: Sendable {
     public init() {}
 
-    /// Small gap (in beats) inserted before non-tied note boundaries so the
-    /// sampler produces a re-articulation between consecutive same-pitch notes.
-    private static let articulationGap: Double = 0.05
+    /// Gap (in beats) inserted at the tail of a note when the immediately
+    /// following note on the same part has the same pitch.  This forces the
+    /// sampler to re-attack rather than sustaining through the boundary.
+    ///
+    /// 0.1 beats ≈ 60 ms at 100 BPM — clearly audible on the Apple DLS sampler.
+    /// The previous value of 0.05 beats (≈ 30 ms) was below the sampler's
+    /// re-trigger threshold and produced no perceptible separation.
+    private static let articulationGap: Double = 0.1
 
     public func schedule(score: Score) -> MIDISchedule {
         var events: [MIDIEvent] = []
@@ -93,8 +98,21 @@ public struct MIDIScheduler: Sendable {
                         lookback -= 1
                     }
 
-                    // Shorten slightly so consecutive same-pitch notes re-articulate.
-                    let gap = min(Self.articulationGap, totalDuration * 0.25)
+                    // Only shorten if the very next entry is the same pitch (not a
+                    // rest, not a different pitch). A rest already provides silence,
+                    // and a different pitch triggers a new MIDI note number so no
+                    // explicit gap is needed. Without this guard every note was
+                    // shortened — including legato passages where it caused audible
+                    // truncation without any benefit.
+                    let nextEntry = noteIndex + 1 < allNotes.count ? allNotes[noteIndex + 1] : nil
+                    let nextIsSamePitch =
+                        nextEntry.map { next in
+                            !next.note.isRest
+                                && next.note.pitches.map(\.midiNumber)
+                                    == note.pitches.map(\.midiNumber)
+                        } ?? false
+                    let gap = nextIsSamePitch
+                        ? min(Self.articulationGap, totalDuration * 0.25) : 0
                     let sounding = totalDuration - gap
 
                     let velocity: UInt8 = velocityFor(dynamic: note.dynamic)
