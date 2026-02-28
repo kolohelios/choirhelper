@@ -302,6 +302,20 @@ import Testing
         #expect(beatNeg == nil)
     }
 
+    @Test("First line reserves space for key and time signatures") func firstLineLeadingWidth() {
+        let measures = (1...4).map { makeMeasure(number: $0) }
+        let part = makePart(measures: measures)
+        let geo = StaffGeometry(clefType: .treble)
+        let engine = NotationLayoutEngine(staffGeometry: geo, availableWidth: 800)
+        let layout = engine.layout(part: part)
+
+        let firstLine = layout.lines[0]
+        let expectedLeading = StaffGeometry.clefWidth + StaffGeometry.keySignatureWidth
+            + StaffGeometry.timeSignatureWidth
+        // First measure should start at the leading width
+        #expect(firstLine.measures[0].x >= expectedLeading - 1)
+    }
+
     @Test("Chord accidentals are per-pitch") func chordAccidentals() {
         let chord = Note(
             pitches: [
