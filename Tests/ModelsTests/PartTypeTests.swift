@@ -32,4 +32,17 @@ import Testing
         #expect(PartType.tenor.defaultMidiProgram == 52)
         #expect(PartType.soprano.defaultMidiProgram == 52)
     }
+
+    @Test("Tenor parts have octave transposition of 1") func tenorOctaveTransposition() {
+        #expect(PartType.tenor.octaveTransposition == 1)
+        #expect(PartType.tenor1.octaveTransposition == 1)
+        #expect(PartType.tenor2.octaveTransposition == 1)
+    }
+
+    @Test("Non-tenor parts have octave transposition of 0") func nonTenorOctaveTransposition() {
+        #expect(PartType.soprano.octaveTransposition == 0)
+        #expect(PartType.alto.octaveTransposition == 0)
+        #expect(PartType.bass.octaveTransposition == 0)
+        #expect(PartType.piano.octaveTransposition == 0)
+    }
 }
