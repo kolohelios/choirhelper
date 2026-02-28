@@ -36,7 +36,12 @@ let package = Package(
             path: "Sources/SheetMusicOCR"),
 
         // Playback - AVAudioEngine-based MIDI playback
-        .target(name: "Playback", dependencies: ["Models"], path: "Sources/Playback"),
+        .target(
+            name: "Playback", dependencies: ["Models"], path: "Sources/Playback",
+            resources: [
+                .copy("Resources/GeneralUser.sf2"),
+                .copy("Resources/GeneralUser-LICENSE.txt"),
+            ]),
 
         // Storage - iCloud Documents persistence + Keychain
         .target(name: "Storage", dependencies: ["Models"], path: "Sources/Storage"),
