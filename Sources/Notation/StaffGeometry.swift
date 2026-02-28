@@ -9,6 +9,9 @@ public struct StaffGeometry: Sendable {
     /// The clef type determining pitch-to-line mapping.
     public let clefType: ClefType
 
+    /// Octave shift applied to display positions (e.g. +1 for tenor octave treble clef).
+    public let octaveTransposition: Int
+
     /// Minimum horizontal spacing between notes in points.
     public static let minNoteSpacing: CGFloat = 20.0
 
@@ -24,9 +27,10 @@ public struct StaffGeometry: Sendable {
     /// Padding at the start and end of each measure.
     public static let measurePadding: CGFloat = 8.0
 
-    public init(staffSpacing: CGFloat = 8.0, clefType: ClefType = .treble) {
+    public init(staffSpacing: CGFloat = 8.0, clefType: ClefType = .treble, octaveTransposition: Int = 0) {
         self.staffSpacing = staffSpacing
         self.clefType = clefType
+        self.octaveTransposition = octaveTransposition
     }
 
     /// Total height of the 5-line staff (4 spaces between 5 lines).
@@ -61,10 +65,15 @@ public struct StaffGeometry: Sendable {
         return pitch.octave * 7 + stepIndex
     }
 
+    /// Diatonic index adjusted for octave transposition (e.g. tenor display).
+    public func displayDiatonicIndex(for pitch: Pitch) -> Int {
+        Self.diatonicIndex(for: pitch) + octaveTransposition * 7
+    }
+
     /// Y position of a pitch relative to the top of the staff.
     /// Top line = 0, each diatonic step down adds staffSpacing/2.
     public func yPosition(for pitch: Pitch) -> CGFloat {
-        yPosition(forDiatonicIndex: Self.diatonicIndex(for: pitch))
+        yPosition(forDiatonicIndex: displayDiatonicIndex(for: pitch))
     }
 
     /// Y position for a diatonic index relative to the top of the staff.
@@ -74,7 +83,7 @@ public struct StaffGeometry: Sendable {
 
     /// Y positions where ledger lines should be drawn for a pitch outside the staff.
     public func ledgerLineYPositions(for pitch: Pitch) -> [CGFloat] {
-        let noteIndex = Self.diatonicIndex(for: pitch)
+        let noteIndex = displayDiatonicIndex(for: pitch)
         var positions: [CGFloat] = []
 
         if noteIndex > topLineDiatonicIndex {
@@ -99,7 +108,7 @@ public struct StaffGeometry: Sendable {
     /// Whether the stem should point up for a given pitch.
     /// Notes below the middle line get stems up; at or above get stems down.
     public func stemUp(for pitch: Pitch) -> Bool {
-        Self.diatonicIndex(for: pitch) < middleLineDiatonicIndex
+        displayDiatonicIndex(for: pitch) < middleLineDiatonicIndex
     }
 
     /// Y position of a staff line by index (0 = top line, 4 = bottom line).

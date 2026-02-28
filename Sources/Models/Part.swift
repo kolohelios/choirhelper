@@ -85,4 +85,11 @@ public enum PartType: String, Codable, Sendable, CaseIterable, Hashable {
         default: .treble
         }
     }
+
+    public var octaveTransposition: Int {
+        switch self {
+        case .tenor, .tenor1, .tenor2: 1
+        default: 0
+        }
+    }
 }

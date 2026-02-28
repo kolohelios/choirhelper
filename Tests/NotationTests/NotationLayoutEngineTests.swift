@@ -241,6 +241,17 @@ import Testing
         #expect(Set(note.ledgerLineYs).count == note.ledgerLineYs.count)
     }
 
+    // MARK: - Tenor octave transposition tests
+
+    @Test("Tenor C3 with octave transposition renders at same Y as default C4")
+    func tenorOctaveTransposition() {
+        let c3 = Pitch(step: .c, octave: 3)
+        let c4 = Pitch(step: .c, octave: 4)
+        let tenorGeo = StaffGeometry(clefType: .treble, octaveTransposition: 1)
+        let defaultGeo = StaffGeometry(clefType: .treble)
+        #expect(tenorGeo.yPosition(for: c3) == defaultGeo.yPosition(for: c4))
+    }
+
     // MARK: - Reverse beat lookup tests
 
     @Test("beatPosition(forX:) returns start beat for first note X") func beatPositionFirstNote() {

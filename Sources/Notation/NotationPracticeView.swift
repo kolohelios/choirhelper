@@ -5,14 +5,16 @@ import SwiftUI
 public struct NotationPracticeView: View {
     let score: Score
     let currentBeat: Double
+    let onSeek: ((Double) -> Void)?
 
     @State private var showOtherParts = false
     @State private var showLyrics = true
     @State private var showMeasureNumbers = true
 
-    public init(score: Score, currentBeat: Double) {
+    public init(score: Score, currentBeat: Double, onSeek: ((Double) -> Void)? = nil) {
         self.score = score
         self.currentBeat = currentBeat
+        self.onSeek = onSeek
     }
 
     private var userParts: [Part] { score.userParts }
@@ -54,14 +56,14 @@ public struct NotationPracticeView: View {
                 Text(part.name).font(.caption).foregroundStyle(.secondary).padding(.leading, 8)
 
                 GeometryReader { geo in
-                    let geometry = StaffGeometry(staffSpacing: 8, clefType: part.partType.clefType)
+                    let geometry = StaffGeometry(staffSpacing: 8, clefType: part.partType.clefType, octaveTransposition: part.partType.octaveTransposition)
                     let engine = NotationLayoutEngine(
                         staffGeometry: geometry, availableWidth: geo.size.width)
                     let layout = engine.layout(part: part)
 
                     TeleprompterView(
                         layout: layout, currentBeat: currentBeat, showLyrics: showLyrics,
-                        showMeasureNumbers: showMeasureNumbers)
+                        showMeasureNumbers: showMeasureNumbers, onSeek: onSeek)
                 }.frame(height: primaryPartHeight)
             }
         }
@@ -75,7 +77,7 @@ public struct NotationPracticeView: View {
                 Text(part.name).font(.caption2).foregroundStyle(.tertiary).padding(.leading, 8)
 
                 GeometryReader { geo in
-                    let geometry = StaffGeometry(staffSpacing: 5, clefType: part.partType.clefType)
+                    let geometry = StaffGeometry(staffSpacing: 5, clefType: part.partType.clefType, octaveTransposition: part.partType.octaveTransposition)
                     let engine = NotationLayoutEngine(
                         staffGeometry: geometry, availableWidth: geo.size.width)
                     let layout = engine.layout(part: part)
