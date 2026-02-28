@@ -1,3 +1,4 @@
+import AudioToolbox
 import Foundation
 import Testing
 
@@ -232,6 +233,93 @@ import Testing
     @Test("eventIndex at end returns count") func seekToEnd() {
         let schedule = MIDIScheduleSeekTests.makeSchedule()
         #expect(schedule.eventIndex(forBeat: schedule.totalBeats) == schedule.events.count)
+    }
+}
+
+@Suite("MIDIDataBuilder") struct MIDIDataBuilderTests {
+    static func simpleSchedule() -> MIDISchedule {
+        let events = [
+            MIDIEvent(
+                partIndex: 0, midiNote: 60, velocity: 80, startBeat: 0.0, durationBeats: 1.0,
+                measureNumber: 1, noteIndex: 0),
+            MIDIEvent(
+                partIndex: 0, midiNote: 62, velocity: 80, startBeat: 1.0, durationBeats: 1.0,
+                measureNumber: 1, noteIndex: 1),
+        ]
+        return MIDISchedule(events: events, totalBeats: 2.0, tempo: 120)
+    }
+
+    @Test("Builds non-empty Data from a simple schedule") func buildsNonEmptyData() throws {
+        let data = try MIDIDataBuilder.buildSMFData(
+            from: MIDIDataBuilderTests.simpleSchedule(), partCount: 1)
+        #expect(!data.isEmpty)
+    }
+
+    @Test("Multi-part schedule produces correct track count") func multiPartTrackCount() throws {
+        let events = [
+            MIDIEvent(
+                partIndex: 0, midiNote: 60, velocity: 80, startBeat: 0.0, durationBeats: 1.0,
+                measureNumber: 1, noteIndex: 0),
+            MIDIEvent(
+                partIndex: 1, midiNote: 64, velocity: 80, startBeat: 0.0, durationBeats: 1.0,
+                measureNumber: 1, noteIndex: 0),
+            MIDIEvent(
+                partIndex: 2, midiNote: 67, velocity: 80, startBeat: 0.0, durationBeats: 1.0,
+                measureNumber: 1, noteIndex: 0),
+        ]
+        let schedule = MIDISchedule(events: events, totalBeats: 1.0, tempo: 100)
+        let data = try MIDIDataBuilder.buildSMFData(from: schedule, partCount: 3)
+
+        // Round-trip through MusicSequence to verify track count
+        var sequence: MusicSequence?
+        NewMusicSequence(&sequence)
+        defer { if let sequence { DisposeMusicSequence(sequence) } }
+        let status = MusicSequenceFileLoadData(sequence!, data as CFData, .midiType, [])
+        #expect(status == noErr)
+
+        var trackCount: UInt32 = 0
+        MusicSequenceGetTrackCount(sequence!, &trackCount)
+        #expect(trackCount == 3)
+    }
+
+    @Test("Tempo is embedded correctly") func tempoEmbedded() throws {
+        let schedule = MIDISchedule(events: [], totalBeats: 0, tempo: 96)
+        let data = try MIDIDataBuilder.buildSMFData(from: schedule, partCount: 0)
+
+        var sequence: MusicSequence?
+        NewMusicSequence(&sequence)
+        defer { if let sequence { DisposeMusicSequence(sequence) } }
+        MusicSequenceFileLoadData(sequence!, data as CFData, .midiType, [])
+
+        var tempoTrack: MusicTrack?
+        MusicSequenceGetTempoTrack(sequence!, &tempoTrack)
+
+        var iterator: MusicEventIterator?
+        NewMusicEventIterator(tempoTrack!, &iterator)
+        defer { if let iterator { DisposeMusicEventIterator(iterator) } }
+
+        var hasEvent: DarwinBoolean = false
+        MusicEventIteratorHasCurrentEvent(iterator!, &hasEvent)
+        #expect(hasEvent.boolValue)
+
+        var timestamp: MusicTimeStamp = 0
+        var eventType: MusicEventType = 0
+        var eventData: UnsafeRawPointer?
+        var eventDataSize: UInt32 = 0
+        MusicEventIteratorGetEventInfo(
+            iterator!, &timestamp, &eventType, &eventData, &eventDataSize)
+        #expect(timestamp == 0)
+        #expect(eventType == kMusicEventType_ExtendedTempo)
+        if eventType == kMusicEventType_ExtendedTempo {
+            let tempo = eventData!.load(as: ExtendedTempoEvent.self)
+            #expect(abs(tempo.bpm - 96.0) < 0.01)
+        }
+    }
+
+    @Test("Empty schedule produces valid data") func emptyScheduleValid() throws {
+        let schedule = MIDISchedule(events: [], totalBeats: 0, tempo: 120)
+        let data = try MIDIDataBuilder.buildSMFData(from: schedule, partCount: 0)
+        #expect(!data.isEmpty)
     }
 }
 

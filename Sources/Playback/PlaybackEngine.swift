@@ -32,10 +32,20 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
     private var score: Score?
 
     public private(set) var state: PlaybackState = .stopped
-    public private(set) var currentBeat: Double = 0
     public var totalBeats: Double { schedule?.totalBeats ?? 0 }
 
-    private var playbackTask: Task<Void, Never>?
+    private var sequencer: AVAudioSequencer?
+    private var baseTempo: Double = 120
+    private var _currentBeat: Double = 0
+    private var monitorTask: Task<Void, Never>?
+
+    public var currentBeat: Double {
+        if state == .playing, let sequencer {
+            return sequencer.currentPositionInBeats
+        }
+        return _currentBeat
+    }
+
     private var partVolumes: [Float] = []
     private var partMuted: [Bool] = []
     private var currentTempo: Int = 120
@@ -67,46 +77,54 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
             }
         }
 
+        try setupSequencer(partCount: score.parts.count)
+        baseTempo = Double(score.tempo)
+
         partVolumes = Array(repeating: Float(1.0), count: score.parts.count)
         partMuted = Array(repeating: false, count: score.parts.count)
     }
 
     public func play() throws {
-        guard let schedule, state != .playing else { return }
+        guard let sequencer, state != .playing else { return }
 
         if !engine.isRunning { try engine.start() }
 
-        state = .playing
+        sequencer.currentPositionInBeats = _currentBeat
+        sequencer.rate = Float(Double(currentTempo) / baseTempo)
+        try sequencer.start()
 
-        playbackTask = Task { [weak self] in
-            guard let self else { return }
-            await self.runPlayback(schedule: schedule)
-        }
+        state = .playing
+        startMonitor()
     }
 
     public func pause() {
+        guard let sequencer else { return }
+        _currentBeat = sequencer.currentPositionInBeats
+        sequencer.stop()
+        monitorTask?.cancel()
+        monitorTask = nil
         state = .paused
-        playbackTask?.cancel()
-        playbackTask = nil
         allNotesOff()
     }
 
     public func stop() {
+        sequencer?.stop()
+        monitorTask?.cancel()
+        monitorTask = nil
         state = .stopped
-        playbackTask?.cancel()
-        playbackTask = nil
-        currentBeat = 0
+        _currentBeat = 0
         allNotesOff()
     }
 
     public func seek(toBeat beat: Double) throws {
         let clamped = max(0, min(beat, totalBeats))
         allNotesOff()
-        currentBeat = clamped
+        _currentBeat = clamped
 
         if state == .playing {
-            playbackTask?.cancel()
-            playbackTask = nil
+            sequencer?.stop()
+            monitorTask?.cancel()
+            monitorTask = nil
             try play()
         } else if state == .stopped {
             state = .paused
@@ -129,7 +147,12 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
         }
     }
 
-    public func setTempo(_ bpm: Int) { currentTempo = max(40, min(300, bpm)) }
+    public func setTempo(_ bpm: Int) {
+        currentTempo = max(40, min(300, bpm))
+        if state == .playing, let sequencer {
+            sequencer.rate = Float(Double(currentTempo) / baseTempo)
+        }
+    }
 
     // MARK: - Audio Graph
 
@@ -153,7 +176,33 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
         engine.prepare()
     }
 
+    private func setupSequencer(partCount: Int) throws {
+        guard let schedule else { return }
+
+        let midiData = try MIDIDataBuilder.buildSMFData(from: schedule, partCount: partCount)
+
+        let seq = AVAudioSequencer(audioEngine: engine)
+        try seq.load(from: midiData, options: [])
+
+        // Route each part track to its corresponding sampler.
+        // AVAudioSequencer.tracks excludes the tempo track, so
+        // tracks[i] corresponds to part i.
+        guard seq.tracks.count >= partCount else {
+            throw ChoirHelperError.audioEngineError(
+                "Expected \(partCount) sequencer tracks, got \(seq.tracks.count)")
+        }
+        for i in 0..<partCount {
+            seq.tracks[i].destinationAudioUnit = samplers[i]
+        }
+
+        seq.prepareToPlay()
+        self.sequencer = seq
+    }
+
     private func teardownAudioGraph() {
+        sequencer?.stop()
+        sequencer = nil
+
         if engine.isRunning { engine.stop() }
         for sampler in samplers { engine.detach(sampler) }
         for mixer in mixerNodes { engine.detach(mixer) }
@@ -161,60 +210,28 @@ public actor PlaybackEngine: PlaybackEngineProtocol {
         mixerNodes = []
     }
 
-    // MARK: - Playback Loop
+    // MARK: - End-of-playback monitor
 
-    private struct ActiveNote {
-        let partIndex: Int
-        let note: UInt8
-        let endBeat: Double
+    private func startMonitor() {
+        monitorTask?.cancel()
+        monitorTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(100))
+                guard let self else { return }
+                if await self.checkPlaybackEnd() { return }
+            }
+        }
     }
 
-    private func runPlayback(schedule: MIDISchedule) async {
-        let events = schedule.events
-        var activeNotes: [ActiveNote] = []
-        var eventIndex = schedule.eventIndex(forBeat: currentBeat)
-        let startTime = Date()
-        let startBeat = currentBeat
-
-        while state == .playing, !Task.isCancelled {
-            let elapsed = Date().timeIntervalSince(startTime)
-            let beatsPerSecond = Double(currentTempo) / 60.0
-            currentBeat = startBeat + elapsed * beatsPerSecond
-
-            if currentBeat >= schedule.totalBeats {
-                state = .stopped
-                currentBeat = 0
-                allNotesOff()
-                return
-            }
-
-            // Start new notes
-            while eventIndex < events.count, events[eventIndex].startBeat <= currentBeat {
-                let event = events[eventIndex]
-                if event.partIndex < samplers.count, !partMuted[event.partIndex] {
-                    samplers[event.partIndex].startNote(
-                        event.midiNote, withVelocity: event.velocity, onChannel: 0)
-                    activeNotes.append(
-                        ActiveNote(
-                            partIndex: event.partIndex, note: event.midiNote, endBeat: event.endBeat
-                        ))
-                }
-                eventIndex += 1
-            }
-
-            // End expired notes
-            activeNotes.removeAll { active in
-                if active.endBeat <= currentBeat {
-                    if active.partIndex < samplers.count {
-                        samplers[active.partIndex].stopNote(active.note, onChannel: 0)
-                    }
-                    return true
-                }
-                return false
-            }
-
-            try? await Task.sleep(for: .milliseconds(10))
+    private func checkPlaybackEnd() -> Bool {
+        guard state == .playing else { return true }
+        if let sequencer, !sequencer.isPlaying {
+            state = .stopped
+            _currentBeat = 0
+            allNotesOff()
+            return true
         }
+        return false
     }
 
     private func allNotesOff() {
