@@ -29,6 +29,7 @@ public struct ContentView: View {
 private struct LibraryListView: View {
     let scores: [Score]
     @Binding var selectedScore: Score?
+    @State private var showingSettings = false
 
     var body: some View {
         List(scores, selection: $selectedScore) { score in
@@ -44,5 +45,24 @@ private struct LibraryListView: View {
                 }.font(.caption).foregroundStyle(.secondary)
             }.tag(score)
         }.navigationTitle("Library")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Label("Settings", systemImage: "gear")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingSettings) {
+                NavigationStack {
+                    SettingsView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showingSettings = false }
+                            }
+                        }
+                }
+            }
     }
 }
