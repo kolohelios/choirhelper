@@ -44,14 +44,16 @@ public struct PracticeContainerView: View {
                 }
             }
             .task { await loadActivePartTypes() }
-            .task { await setupEngine() }.alert(
-            "Playback Error",
-            isPresented: .init(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
-        ) {
-            Button("OK") { errorMessage = nil }
-        } message: {
-            Text(errorMessage ?? "")
-        }
+            .task { await setupEngine() }
+            .alert(
+                "Playback Error",
+                isPresented: .init(
+                    get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
+            ) {
+                Button("OK") { errorMessage = nil }
+            } message: {
+                Text(errorMessage ?? "")
+            }
     }
 
     private var scoreHeader: some View {

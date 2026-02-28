@@ -98,6 +98,41 @@ private let minimalSATBXML = """
     </score-partwise>
     """
 
+private let mixedChordXML = """
+    <?xml version="1.0"?>
+    <score-partwise>
+      <part-list>
+        <score-part id="P1"><part-name>Piano</part-name></score-part>
+      </part-list>
+      <part id="P1">
+        <measure number="1">
+          <attributes><divisions>1</divisions></attributes>
+          <note>
+            <pitch><step>C</step><octave>4</octave></pitch>
+            <duration>1</duration>
+            <type>quarter</type>
+          </note>
+          <note>
+            <chord/>
+            <pitch><step>E</step><octave>4</octave></pitch>
+            <duration>1</duration>
+            <type>quarter</type>
+          </note>
+          <note>
+            <pitch><step>D</step><octave>4</octave></pitch>
+            <duration>1</duration>
+            <type>quarter</type>
+          </note>
+          <note>
+            <pitch><step>E</step><octave>4</octave></pitch>
+            <duration>2</duration>
+            <type>half</type>
+          </note>
+        </measure>
+      </part>
+    </score-partwise>
+    """
+
 // MARK: - Tests
 
 @Suite("MusicXMLParser") struct MusicXMLParserTests {
@@ -278,41 +313,7 @@ private let minimalSATBXML = """
     @Test("Mixed chords and single notes produce correct note count") func mixedChordAndSingle()
         throws
     {
-        let xml = """
-            <?xml version="1.0"?>
-            <score-partwise>
-              <part-list>
-                <score-part id="P1"><part-name>Piano</part-name></score-part>
-              </part-list>
-              <part id="P1">
-                <measure number="1">
-                  <attributes><divisions>1</divisions></attributes>
-                  <note>
-                    <pitch><step>C</step><octave>4</octave></pitch>
-                    <duration>1</duration>
-                    <type>quarter</type>
-                  </note>
-                  <note>
-                    <chord/>
-                    <pitch><step>E</step><octave>4</octave></pitch>
-                    <duration>1</duration>
-                    <type>quarter</type>
-                  </note>
-                  <note>
-                    <pitch><step>D</step><octave>4</octave></pitch>
-                    <duration>1</duration>
-                    <type>quarter</type>
-                  </note>
-                  <note>
-                    <pitch><step>E</step><octave>4</octave></pitch>
-                    <duration>2</duration>
-                    <type>half</type>
-                  </note>
-                </measure>
-              </part>
-            </score-partwise>
-            """
-        let score = try parser.parse(data: Data(xml.utf8))
+        let score = try parser.parse(data: Data(mixedChordXML.utf8))
         let notes = score.parts[0].measures[0].notes
         // C+E chord (1 note), D single, E single = 3 notes
         #expect(notes.count == 3)

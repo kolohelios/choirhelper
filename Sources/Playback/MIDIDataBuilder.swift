@@ -30,27 +30,7 @@ enum MIDIDataBuilder {
         // One track per part
         let groupedByPart = Dictionary(grouping: schedule.events) { $0.partIndex }
         for partIndex in 0..<partCount {
-            var track: MusicTrack?
-            status = MusicSequenceNewTrack(sequence, &track)
-            guard status == noErr, let track else {
-                throw ChoirHelperError.audioEngineError("Failed to create track \(partIndex): \(status)")
-            }
-
-            let partEvents = groupedByPart[partIndex] ?? []
-            for event in partEvents {
-                var noteMessage = MIDINoteMessage(
-                    channel: 0,
-                    note: event.midiNote,
-                    velocity: event.velocity,
-                    releaseVelocity: 0,
-                    duration: Float32(event.durationBeats)
-                )
-                status = MusicTrackNewMIDINoteEvent(track, event.startBeat, &noteMessage)
-                guard status == noErr else {
-                    throw ChoirHelperError.audioEngineError(
-                        "Failed to add note event: \(status)")
-                }
-            }
+            try addTrack(to: sequence, partIndex: partIndex, events: groupedByPart[partIndex] ?? [])
         }
 
         // Export as SMF Type 1, 480 ticks/quarter
@@ -62,5 +42,24 @@ enum MIDIDataBuilder {
         }
         let data = cfData.takeRetainedValue() as Data
         return data
+    }
+
+    private static func addTrack(
+        to sequence: MusicSequence, partIndex: Int, events: [MIDIEvent]
+    ) throws {
+        var track: MusicTrack?
+        var status = MusicSequenceNewTrack(sequence, &track)
+        guard status == noErr, let track else {
+            throw ChoirHelperError.audioEngineError("Failed to create track \(partIndex): \(status)")
+        }
+        for event in events {
+            var noteMessage = MIDINoteMessage(
+                channel: 0, note: event.midiNote, velocity: event.velocity,
+                releaseVelocity: 0, duration: Float32(event.durationBeats))
+            status = MusicTrackNewMIDINoteEvent(track, event.startBeat, &noteMessage)
+            guard status == noErr else {
+                throw ChoirHelperError.audioEngineError("Failed to add note event: \(status)")
+            }
+        }
     }
 }
