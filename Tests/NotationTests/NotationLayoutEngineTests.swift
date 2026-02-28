@@ -241,6 +241,56 @@ import Testing
         #expect(Set(note.ledgerLineYs).count == note.ledgerLineYs.count)
     }
 
+    // MARK: - Reverse beat lookup tests
+
+    @Test("beatPosition(forX:) returns start beat for first note X") func beatPositionFirstNote() {
+        let part = makePart(measures: [makeMeasure(number: 1)])
+        let geo = StaffGeometry(clefType: .treble)
+        let engine = NotationLayoutEngine(staffGeometry: geo, availableWidth: 400)
+        let layout = engine.layout(part: part)
+
+        let line = layout.lines[0]
+        let firstNote = line.measures[0].notes[0]
+        let beat = line.beatPosition(forX: firstNote.x)
+        #expect(beat != nil)
+        #expect(abs(beat! - firstNote.beatPosition) < 0.01)
+    }
+
+    @Test("beatPosition(forX:) interpolates within measure") func beatPositionInterpolation() {
+        let part = makePart(measures: [makeMeasure(number: 1)])
+        let geo = StaffGeometry(clefType: .treble)
+        let engine = NotationLayoutEngine(staffGeometry: geo, availableWidth: 400)
+        let layout = engine.layout(part: part)
+
+        let line = layout.lines[0]
+        let notes = line.measures[0].notes
+        guard notes.count >= 2 else { return }
+
+        // Midpoint between first and second note
+        let midX = (notes[0].x + notes[1].x) / 2
+        let beat = line.beatPosition(forX: midX)
+        #expect(beat != nil)
+        // Should be between the two notes' beat positions
+        #expect(beat! > notes[0].beatPosition)
+        #expect(beat! < notes[1].beatPosition)
+    }
+
+    @Test("beatPosition(forX:) returns nil outside line bounds") func beatPositionOutsideBounds() {
+        let part = makePart(measures: [makeMeasure(number: 1)])
+        let geo = StaffGeometry(clefType: .treble)
+        let engine = NotationLayoutEngine(staffGeometry: geo, availableWidth: 400)
+        let layout = engine.layout(part: part)
+
+        let line = layout.lines[0]
+        // Way past the right edge
+        let beat = line.beatPosition(forX: 10000)
+        #expect(beat == nil)
+
+        // Before the measure start
+        let beatNeg = line.beatPosition(forX: -100)
+        #expect(beatNeg == nil)
+    }
+
     @Test("Chord accidentals are per-pitch") func chordAccidentals() {
         let chord = Note(
             pitches: [

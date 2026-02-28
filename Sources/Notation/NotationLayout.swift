@@ -96,6 +96,40 @@ public struct LayoutLine: Sendable {
         self.startBeat = startBeat
         self.endBeat = endBeat
     }
+
+    /// Reverse lookup: X position to beat position.
+    /// Returns the beat position corresponding to the given X coordinate,
+    /// or nil if X is outside this line's bounds.
+    public func beatPosition(forX x: CGFloat) -> Double? {
+        // Find the measure containing this X
+        guard let measure = measures.first(where: { x >= $0.x && x < $0.x + $0.width }) else {
+            return nil
+        }
+
+        // Find the note interval containing X
+        for (index, note) in measure.notes.enumerated() {
+            let nextX: CGFloat
+            let noteEnd: Double
+            if index + 1 < measure.notes.count {
+                nextX = measure.notes[index + 1].x
+                noteEnd = measure.notes[index + 1].beatPosition
+            } else {
+                nextX = measure.x + measure.width - StaffGeometry.measurePadding
+                noteEnd =
+                    measure.startBeat
+                    + measure.notes.reduce(0) { sum, nt in sum + nt.noteType.relativeDuration }
+            }
+
+            if x >= note.x && x < nextX {
+                let fraction =
+                    nextX > note.x ? Double((x - note.x) / (nextX - note.x)) : 0
+                return note.beatPosition + fraction * (noteEnd - note.beatPosition)
+            }
+        }
+
+        // Before first note in measure — snap to measure start
+        return measure.startBeat
+    }
 }
 
 /// Complete layout result for a single part.
