@@ -38,9 +38,12 @@ public struct ChoirHelperApp: App {
     }
 
     private func loadBundledAmazingGrace() -> Score? {
-        guard let url = Bundle.main.url(
+        // Try SPM resource bundle first, then main bundle
+        let bundle = Bundle.module
+        guard let url = bundle.url(
             forResource: "amazing_grace",
-            withExtension: "musicxml"
+            withExtension: "musicxml",
+            subdirectory: "ExamplePieces"
         ) else { return nil }
 
         let parser = MusicXMLParser()

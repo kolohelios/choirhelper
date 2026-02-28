@@ -23,7 +23,7 @@ let package = Package(
     ],
     targets: [
         // App - SwiftUI app entry point
-        .target(
+        .executableTarget(
             name: "App",
             dependencies: [
                 "Models",
@@ -33,7 +33,10 @@ let package = Package(
                 "Storage",
                 "Views",
             ],
-            path: "Sources/App"
+            path: "Sources/App",
+            resources: [
+                .copy("../../Resources/ExamplePieces"),
+            ]
         ),
 
         // Views - SwiftUI view components
