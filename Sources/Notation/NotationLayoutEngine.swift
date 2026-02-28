@@ -142,33 +142,45 @@ public struct NotationLayoutEngine: Sendable {
         return result
     }
 
-    /// Compute position and visual properties for a single note.
+    /// Compute position and visual properties for a single note (or chord).
     private func layoutSingleNote(_ note: Note, x: CGFloat, beatPosition: Double) -> LayoutNote {
-        let y: CGFloat
-        let stemUp: Bool
-        let accidental: Int
-        let ledgerLineYs: [CGFloat]
+        if note.isRest || note.pitches.isEmpty {
+            let restY = staffGeometry.staffHeight / 2
+            return LayoutNote(
+                x: x, y: restY, noteType: note.noteType, isRest: note.isRest, stemUp: false,
+                accidental: 0, lyricText: note.lyric?.text, ledgerLineYs: [],
+                beatPosition: beatPosition)
+        }
 
-        if note.isRest {
-            y = staffGeometry.staffHeight / 2
-            stemUp = false
-            accidental = 0
-            ledgerLineYs = []
-        } else if let pitch = note.pitch {
-            y = staffGeometry.yPosition(for: pitch)
-            stemUp = staffGeometry.stemUp(for: pitch)
-            accidental = pitch.alter
-            ledgerLineYs = staffGeometry.ledgerLineYPositions(for: pitch)
+        let ys = note.pitches.map { staffGeometry.yPosition(for: $0) }
+        let accidentals = note.pitches.map(\.alter)
+
+        // Merge ledger lines from all pitches, deduplicated
+        var ledgerSet = Set<CGFloat>()
+        for pitch in note.pitches {
+            for ly in staffGeometry.ledgerLineYPositions(for: pitch) {
+                ledgerSet.insert(ly)
+            }
+        }
+        let ledgerLineYs = ledgerSet.sorted()
+
+        // Stem direction: compare outermost pitches' distance from middle line
+        let stemUp: Bool
+        if note.pitches.count == 1 {
+            stemUp = staffGeometry.stemUp(for: note.pitches[0])
         } else {
-            y = staffGeometry.staffHeight / 2
-            stemUp = false
-            accidental = 0
-            ledgerLineYs = []
+            let middleY = staffGeometry.yPosition(
+                forDiatonicIndex: staffGeometry.middleLineDiatonicIndex)
+            let topY = ys.min()!
+            let bottomY = ys.max()!
+            let topDist = abs(topY - middleY)
+            let bottomDist = abs(bottomY - middleY)
+            stemUp = bottomDist >= topDist
         }
 
         return LayoutNote(
-            x: x, y: y, noteType: note.noteType, isRest: note.isRest, stemUp: stemUp,
-            accidental: accidental, lyricText: note.lyric?.text, ledgerLineYs: ledgerLineYs,
+            x: x, ys: ys, noteType: note.noteType, isRest: false, stemUp: stemUp,
+            accidentals: accidentals, lyricText: note.lyric?.text, ledgerLineYs: ledgerLineYs,
             beatPosition: beatPosition)
     }
 }

@@ -5,16 +5,16 @@ import Models
 public struct LayoutNote: Sendable {
     /// X position of the notehead center.
     public let x: CGFloat
-    /// Y position of the notehead center relative to the staff top line.
-    public let y: CGFloat
+    /// Y positions of each notehead center relative to the staff top line.
+    public let ys: [CGFloat]
     /// The note type (whole, half, quarter, etc.).
     public let noteType: NoteType
     /// Whether this note is a rest.
     public let isRest: Bool
     /// Whether the stem points up.
     public let stemUp: Bool
-    /// Accidental to display (-1 flat, 0 none, 1 sharp).
-    public let accidental: Int
+    /// Accidentals to display per pitch (-1 flat, 0 none, 1 sharp).
+    public let accidentals: [Int]
     /// Lyric syllable text, if any.
     public let lyricText: String?
     /// Y positions for ledger lines needed by this note.
@@ -22,16 +22,38 @@ public struct LayoutNote: Sendable {
     /// Beat position in the piece (for cursor tracking).
     public let beatPosition: Double
 
+    /// Backward-compatible single Y position (first pitch).
+    public var y: CGFloat { ys.first ?? 0 }
+    /// Backward-compatible single accidental (first pitch).
+    public var accidental: Int { accidentals.first ?? 0 }
+    /// Whether this layout note represents a chord.
+    public var isChord: Bool { ys.count > 1 }
+
+    public init(
+        x: CGFloat, ys: [CGFloat], noteType: NoteType, isRest: Bool, stemUp: Bool,
+        accidentals: [Int], lyricText: String?, ledgerLineYs: [CGFloat], beatPosition: Double
+    ) {
+        self.x = x
+        self.ys = ys
+        self.noteType = noteType
+        self.isRest = isRest
+        self.stemUp = stemUp
+        self.accidentals = accidentals
+        self.lyricText = lyricText
+        self.ledgerLineYs = ledgerLineYs
+        self.beatPosition = beatPosition
+    }
+
     public init(
         x: CGFloat, y: CGFloat, noteType: NoteType, isRest: Bool, stemUp: Bool, accidental: Int,
         lyricText: String?, ledgerLineYs: [CGFloat], beatPosition: Double
     ) {
         self.x = x
-        self.y = y
+        self.ys = [y]
         self.noteType = noteType
         self.isRest = isRest
         self.stemUp = stemUp
-        self.accidental = accidental
+        self.accidentals = [accidental]
         self.lyricText = lyricText
         self.ledgerLineYs = ledgerLineYs
         self.beatPosition = beatPosition
