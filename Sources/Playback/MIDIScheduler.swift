@@ -52,14 +52,16 @@ public struct MIDIScheduler: Sendable {
 
             for measure in part.measures {
                 for (noteIndex, note) in measure.notes.enumerated() {
-                    if !note.isRest, let pitch = note.pitch {
-                        let midiNote = UInt8(clamping: pitch.midiNumber)
+                    if !note.isRest {
                         let velocity: UInt8 = velocityFor(dynamic: note.dynamic)
-                        let event = MIDIEvent(
-                            partIndex: partIndex, midiNote: midiNote, velocity: velocity,
-                            startBeat: currentBeat, durationBeats: note.duration,
-                            measureNumber: measure.number, noteIndex: noteIndex)
-                        events.append(event)
+                        for pitch in note.pitches {
+                            let midiNote = UInt8(clamping: pitch.midiNumber)
+                            let event = MIDIEvent(
+                                partIndex: partIndex, midiNote: midiNote, velocity: velocity,
+                                startBeat: currentBeat, durationBeats: note.duration,
+                                measureNumber: measure.number, noteIndex: noteIndex)
+                            events.append(event)
+                        }
                     }
                     currentBeat += note.duration
                 }
